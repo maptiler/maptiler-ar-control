@@ -1,4 +1,4 @@
-import { Map, LngLatBounds } from '@maptiler/sdk';
+import { IControl, Map, LngLatBounds } from '@maptiler/sdk';
 import EventEmitter from 'events';
 
 declare type MapTextureData = {
@@ -8,7 +8,9 @@ declare type MapTextureData = {
     bounds: LngLatBounds;
 };
 declare function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement;
-declare class MaptilerARControl extends EventEmitter {
+declare class MaptilerARControl extends EventEmitter implements IControl {
+    private controlButton;
+    private controlButtonContainer;
     private map;
     private colorData;
     private landMaskData;
@@ -29,6 +31,8 @@ declare class MaptilerARControl extends EventEmitter {
     private itemsToDispose;
     private gltfExporter;
     constructor(map?: Map | null);
+    onAdd(map: maplibregl.Map): HTMLElement;
+    onRemove(): void;
     setMap(m: Map): void;
     getMeterPerPixelCenter(): number;
     getColorData(): MapTextureData | null;
@@ -48,7 +52,7 @@ declare class MaptilerARControl extends EventEmitter {
     private computeLandMaskData;
     private computeTerrainData_VIEWPORT;
     private computeTerrainData;
-    compute(): Promise<void>;
+    computeTextures(): Promise<void>;
     init3DScene(container: HTMLDivElement | null): void;
     buildMapModel(): void;
     render3D: () => void;
@@ -56,6 +60,8 @@ declare class MaptilerARControl extends EventEmitter {
     private createMapMesh;
     dispose(): void;
     export(binary?: boolean): void;
+    getModelBlob(): Promise<Blob>;
+    private displayModal;
 }
 
 export { MaptilerARControl, mapTextureDataToCanvas };

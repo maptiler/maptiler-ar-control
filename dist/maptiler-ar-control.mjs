@@ -1,4 +1,5 @@
 import { LngLat } from '@maptiler/sdk';
+import { ModelViewerElement } from '@google/model-viewer/dist/model-viewer';
 import EventEmitter from 'events';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -26,6 +27,9 @@ var __async = (__this, __arguments, generator) => {
 };
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
+function removeDomNode(node) {
+  node.parentNode.removeChild(node);
+}
 function latLon2Tile(zoom, lon, lat, round = true) {
   const x = (lon + 180) / 360 * Math.pow(2, zoom);
   const y = (1 - Math.log(
@@ -149,6 +153,44 @@ class MaptilerARControl extends EventEmitter {
     };
     if (map !== null)
       this.setMap(map);
+  }
+  onAdd(map) {
+    this.setMap(map);
+    this.controlButtonContainer = window.document.createElement("div");
+    this.controlButtonContainer.className = "maplibregl-ctrl maplibregl-ctrl-group";
+    this.controlButton = window.document.createElement("button");
+    this.controlButton.className = "maptiler-ar-ctrl";
+    this.controlButtonContainer.appendChild(this.controlButton);
+    const iconSpan = window.document.createElement("span");
+    iconSpan.className = "maplibregl-ctrl-icon";
+    iconSpan.setAttribute("aria-hidden", "true");
+    this.controlButton.appendChild(iconSpan);
+    iconSpan.innerText = "AR";
+    iconSpan.style.textAlign = "center";
+    iconSpan.style.fontFamily = "sans-serif";
+    iconSpan.style.fontWeight = "600";
+    iconSpan.style.fontSize = "13px";
+    iconSpan.style.paddingTop = "10px";
+    iconSpan.style.color = "#5c636e";
+    this.controlButton.type = "button";
+    this.controlButton.addEventListener("click", (evt) => __async(this, null, function* () {
+      this.emit("computeStart");
+      yield this.computeTextures();
+      const colorData = this.getColorData();
+      const terrainData = this.getTerrainData();
+      if (!colorData)
+        return;
+      if (!terrainData)
+        return;
+      this.buildMapModel();
+      this.displayModal();
+    }));
+    this.init3DScene(null);
+    return this.controlButtonContainer;
+  }
+  onRemove() {
+    this.dispose();
+    this.controlButtonContainer.parentNode.removeChild(this.controlButtonContainer);
   }
   setMap(m) {
     this.map = m;
@@ -384,7 +426,7 @@ class MaptilerARControl extends EventEmitter {
       this.emit("endComputeTerrainData", {});
     });
   }
-  compute() {
+  computeTextures() {
     return __async(this, null, function* () {
       var _a;
       this.enableTopView();
@@ -571,6 +613,77 @@ class MaptilerARControl extends EventEmitter {
         maxTextureSize: 8192
       }
     );
+  }
+  getModelBlob() {
+    return __async(this, null, function* () {
+      return new Promise((resolve, reject) => {
+        this.gltfExporter.parse(
+          this.threeScene,
+          (gltfPayload) => {
+            const gltfBlob = new Blob([gltfPayload], {
+              type: "application/octet-stream"
+            });
+            resolve(gltfBlob);
+          },
+          (err) => {
+            reject(err);
+          },
+          {
+            binary: true,
+            maxTextureSize: 8192
+          }
+        );
+      });
+    });
+  }
+  displayModal() {
+    return __async(this, null, function* () {
+      if (!typeof window)
+        return;
+      const container = this.map.getContainer();
+      console.log(container);
+      const modelBlob = yield this.getModelBlob();
+      const modelObjectURL = URL.createObjectURL(modelBlob);
+      const modelUrl = new URL(modelObjectURL, self.location.toString());
+      console.log("modelObjectURL", modelObjectURL);
+      console.log("modelUrl", modelUrl);
+      this.emit("computeEnd");
+      console.log(ModelViewerElement);
+      const modelViewer = document.createElement("model-viewer");
+      modelViewer.src = modelObjectURL;
+      modelViewer.setAttribute("ar", "true");
+      modelViewer.setAttribute("ar-modes", "webxr quick-look");
+      modelViewer.setAttribute("camera-controls", "true");
+      modelViewer.setAttribute("shadow-intensity", "1");
+      modelViewer.style.width = "100%";
+      modelViewer.style.height = "100%";
+      modelViewer.style.zIndex = "3";
+      modelViewer.style.position = "absolute";
+      modelViewer.style.background = "#FFFFFF";
+      console.log(modelViewer);
+      container.appendChild(modelViewer);
+      console.log("hello");
+      const arButton = document.createElement("button");
+      arButton.setAttribute("slot", "ar-button");
+      arButton.id = "ar-button";
+      arButton.innerText = "View in your space";
+      modelViewer.appendChild(arButton);
+      const closeButton = document.createElement("div");
+      closeButton.innerHTML = "[ close ]";
+      closeButton.style.position = "absolute";
+      closeButton.style.left = "0";
+      closeButton.style.bottom = "0";
+      closeButton.style.zIndex = "4";
+      closeButton.style.margin = "4px";
+      closeButton.style.cursor = "pointer";
+      modelViewer.appendChild(closeButton);
+      closeButton.addEventListener("click", (evt) => __async(this, null, function* () {
+        this.dispose();
+        removeDomNode(arButton);
+        removeDomNode(modelViewer);
+        removeDomNode(closeButton);
+      }));
+    });
   }
 }
 

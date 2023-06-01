@@ -1,4 +1,8 @@
-import { Map, LngLatBounds, LngLat } from "@maptiler/sdk";
+import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
+
+import { ModelViewerElement } from "@google/model-viewer/dist/model-viewer";
+
+
 
 import EventEmitter from "events";
 import * as THREE from "three";
@@ -27,6 +31,10 @@ type TileIndex2D = {
 
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
+
+function removeDomNode(node) {
+  node.parentNode.removeChild(node);
+}
 
 function latLon2Tile(
   zoom: number,
@@ -177,7 +185,9 @@ function idleAsync(map: Map) {
   });
 }
 
-export class MaptilerARControl extends EventEmitter {
+export class MaptilerARControl extends EventEmitter implements IControl {
+  private controlButton: HTMLButtonElement;
+  private controlButtonContainer: HTMLDivElement;
   private map!: Map;
   private colorData: MapTextureData | null = null;
   private landMaskData: MapTextureData | null = null;
@@ -209,6 +219,59 @@ export class MaptilerARControl extends EventEmitter {
     super();
     if (map !== null) this.setMap(map);
   }
+
+  onAdd(map: maplibregl.Map): HTMLElement {
+    this.setMap(map as Map);
+
+    // Creation of the button to show on map
+    this.controlButtonContainer = window.document.createElement("div");
+    this.controlButtonContainer.className = "maplibregl-ctrl maplibregl-ctrl-group";
+
+    this.controlButton = window.document.createElement("button");
+    this.controlButton.className = "maptiler-ar-ctrl";
+    this.controlButtonContainer.appendChild(this.controlButton);
+
+    const iconSpan = window.document.createElement("span");
+    iconSpan.className = "maplibregl-ctrl-icon";
+    iconSpan.setAttribute("aria-hidden", "true");
+    this.controlButton.appendChild(iconSpan);
+    iconSpan.innerText = "AR";
+
+    iconSpan.style.textAlign = "center";
+    iconSpan.style.fontFamily = "sans-serif";
+    iconSpan.style.fontWeight = "600";
+    iconSpan.style.fontSize = "13px";
+    iconSpan.style.paddingTop = "10px";
+    iconSpan.style.color = "#5c636e";
+    this.controlButton.type = "button";
+
+    this.controlButton.addEventListener("click", async (evt) => {
+      this.emit("computeStart");
+      
+      await this.computeTextures();
+      const colorData = this.getColorData();
+      const terrainData = this.getTerrainData();
+
+      if (!colorData) return;
+      if (!terrainData) return;
+      
+      this.buildMapModel();
+
+      this.displayModal();
+    });
+
+
+    this.init3DScene(null);
+
+    return this.controlButtonContainer;
+  }
+
+  onRemove() {
+    this.dispose();
+    this.controlButtonContainer.parentNode.removeChild(this.controlButtonContainer);
+  }
+
+
 
   setMap(m: Map) {
     this.map = m;
@@ -504,7 +567,7 @@ export class MaptilerARControl extends EventEmitter {
     this.emit("endComputeTerrainData", {});
   }
 
-  async compute() {
+  async computeTextures() {
     // Set the view from top and axis-aligned
     this.enableTopView();
 
@@ -809,5 +872,103 @@ export class MaptilerARControl extends EventEmitter {
         maxTextureSize: 8192,
       }
     );
+  }
+
+
+  async getModelBlob(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+
+      this.gltfExporter.parse(
+        this.threeScene,
+
+        // success
+        (gltfPayload) => {
+          const gltfBlob = new Blob([gltfPayload as ArrayBuffer], {
+            type: "application/octet-stream",
+          });
+
+          resolve(gltfBlob);
+        },
+
+        // error
+        (err) => {
+          reject(err);
+        },
+
+        // options
+        {
+          binary: true,
+          maxTextureSize: 8192,
+        }
+      );
+    })
+  }
+
+
+
+  private async displayModal() {
+    if(!typeof(window)) return
+    
+    const container = this.map.getContainer();
+    console.log(container);
+
+    const modelBlob = await this.getModelBlob();
+    const modelObjectURL = URL.createObjectURL(modelBlob);
+    const modelUrl = new URL(modelObjectURL, self.location.toString());
+
+    console.log("modelObjectURL", modelObjectURL);
+    console.log("modelUrl", modelUrl);
+    
+
+    this.emit("computeEnd");
+    
+
+    // const container = document.getElementById("container");
+    // container.style.width = "100%";
+    // container.style.height = "100%";
+
+    console.log(ModelViewerElement);
+    
+
+    const modelViewer = document.createElement("model-viewer");
+    modelViewer.src = modelObjectURL;
+    // modelViewer.src = "images/maptiler_scene (2).glb"
+    modelViewer.setAttribute("ar", "true");
+    modelViewer.setAttribute("ar-modes", "webxr quick-look");
+    modelViewer.setAttribute("camera-controls", "true");
+    modelViewer.setAttribute("shadow-intensity", "1");
+    modelViewer.style.width = "100%";
+    modelViewer.style.height = "100%";
+    modelViewer.style.zIndex = "3";
+    modelViewer.style.position = "absolute";
+    modelViewer.style.background = "#FFFFFF";
+    console.log(modelViewer);
+
+    container.appendChild(modelViewer);
+
+    console.log("hello");
+
+    const arButton = document.createElement("button");
+    arButton.setAttribute("slot", "ar-button");
+    arButton.id = "ar-button";
+    arButton.innerText = "View in your space";
+    modelViewer.appendChild(arButton);
+
+    const closeButton = document.createElement("div");
+    closeButton.innerHTML = "[ close ]";
+    closeButton.style.position = "absolute";
+    closeButton.style.left = "0";
+    closeButton.style.bottom = "0";
+    closeButton.style.zIndex = "4";
+    closeButton.style.margin = "4px";
+    closeButton.style.cursor = "pointer";
+    modelViewer.appendChild(closeButton);
+
+    closeButton.addEventListener("click", async (evt) => {      
+      this.dispose();
+      removeDomNode(arButton);
+      removeDomNode(modelViewer);
+      removeDomNode(closeButton);
+    })
   }
 }
