@@ -7,7 +7,7 @@ import json from '@rollup/plugin-json';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import pkg from './package.json';
 
-
+const pkgName = "maptilerarcontrol";
 
 const bundles = [
   // ES module, not minified + sourcemap
@@ -18,7 +18,7 @@ const bundles = [
     ],
     output: [
       {
-        file: `dist/${pkg.name}.mjs`,
+        file: `dist/${pkgName}.mjs`,
         format: "es",
         sourcemap: true
       }
@@ -51,8 +51,8 @@ const bundles = [
       esbuild()
     ],
     output: {
-      name: pkg.name,
-      file: `dist/${pkg.name}.js`, 
+      name: pkgName,
+      file: `dist/${pkgName}.js`, 
       format: "umd",
       sourcemap: true,
       globals: {
@@ -75,7 +75,7 @@ const bundles = [
       dts()
     ],
     output: {
-      file: `dist/${pkg.name}.d.ts`,
+      file: `dist/${pkgName}.d.ts`,
       format: "es"
     },
     input: "src/index.ts"
@@ -95,7 +95,7 @@ if (process.env.NODE_ENV === 'production') {
     ],
     output: [
       {
-        file: `dist/${pkg.name}.min.mjs`,
+        file: `dist/${pkgName}.min.mjs`,
         format: "es",
       }
     ],
@@ -125,8 +125,8 @@ if (process.env.NODE_ENV === 'production') {
       })
     ],
     output: {
-      name: pkg.name,
-      file: `dist/${pkg.name}.min.js`, 
+      name: pkgName,
+      file: `dist/${pkgName}.min.js`, 
       format: "umd",
       sourcemap: true,
       globals: {
