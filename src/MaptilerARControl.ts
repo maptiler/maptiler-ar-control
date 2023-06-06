@@ -1,14 +1,14 @@
+// @ts-nocheck
+
 import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
-
-import { ModelViewerElement } from "@google/model-viewer/dist/model-viewer";
-
+import { ModelViewerElement } from "./model-viewer";
 
 
 import EventEmitter from "events";
 import * as THREE from "three";
-// import { ARButton } from 'three/examples/jsm/webxr/ARButton';
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
+import { USDZExporter } from "./USDZExporter";
+
 
 type CameraSettings = {
   center: LngLat;
@@ -29,10 +29,40 @@ type TileIndex2D = {
   y: number;
 };
 
+// Small iOS detector borrowed from ModelViewer
+const IS_IOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(self as any).MSStream) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
 
-function removeDomNode(node) {
+
+async function loadTexture(filepath: string): Promise<THREE.Texture> {
+  return new Promise((resolve, reject) => {
+    const loader = new THREE.TextureLoader();
+
+    // load a resource
+    loader.load(
+      // resource URL
+      filepath,
+
+      // onLoad callback
+      function ( texture ) {
+        resolve(texture);
+      },
+
+      // onProgress callback currently not supported
+      undefined,
+
+      // onError callback
+      function ( err ) {
+        reject(err);
+      }
+    );
+  })
+}
+
+function removeDomNode(node: any) {
   node.parentNode.removeChild(node);
 }
 
@@ -186,8 +216,8 @@ function idleAsync(map: Map) {
 }
 
 export class MaptilerARControl extends EventEmitter implements IControl {
-  private controlButton: HTMLButtonElement;
-  private controlButtonContainer: HTMLDivElement;
+  private controlButton!: HTMLButtonElement;
+  private controlButtonContainer!: HTMLDivElement;
   private map!: Map;
   private colorData: MapTextureData | null = null;
   private landMaskData: MapTextureData | null = null;
@@ -200,18 +230,21 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private originalPixelRatio = 0;
   private mapCaptureBounds!: LngLatBounds;
 
-  private threeScene!: THREE.Scene;
-  private threeCamera!: THREE.PerspectiveCamera;
-  private threeRenderer!: THREE.WebGLRenderer;
-  private threeControler!: THREE.XRTargetRaySpace;
-  private threeOrbitControls!: OrbitControls;
-  private threeTileContainer!: THREE.Object3D;
+  private threeSceneGLTF!: THREE.Scene;
+  private threeSceneUSDZ!: THREE.Scene;
+  private threeTileContainerGLTF!: THREE.Object3D;
+  private threeTileContainerUSDZ!: THREE.Object3D;
+  private gltfMaterial!: THREE.MeshStandardMaterial;
+  private usdzMaterial!: THREE.MeshStandardMaterial;
+  private mapMeshGLTF!: THREE.Mesh;
+  private mapMeshUSDZ!: THREE.Mesh;
   private itemsToDispose: Array<
     | THREE.CanvasTexture
     | THREE.DataTexture
     | THREE.RawShaderMaterial
     | THREE.PlaneGeometry
     | THREE.MeshBasicMaterial
+    | THREE.MeshStandardMaterial
   > = [];
   private gltfExporter: GLTFExporter = new GLTFExporter();
 
@@ -257,18 +290,20 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       
       this.buildMapModel();
 
+
       this.displayModal();
+      // this.emit("computeEnd");
+      // this.downloadUSDZ()
     });
 
 
-    this.init3DScene(null);
-
+    this.init3DScene();
     return this.controlButtonContainer;
   }
 
   onRemove() {
     this.dispose();
-    this.controlButtonContainer.parentNode.removeChild(this.controlButtonContainer);
+    this.controlButtonContainer.parentNode?.removeChild(this.controlButtonContainer);
   }
 
 
@@ -491,6 +526,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.emit("endComputeTerrainData", {});
   }
 
+
   private async computeTerrainData() {
     this.emit("startComputeTerrainData", {});
 
@@ -522,7 +558,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       tileIndexBottomRightFloored,
       zoom,
       [
-        `https://api.maptiler.com/tiles/terrain-rgb/{z}/{x}/{y}.png?key=${sdkConfig.apiKey}&mtsid=${mtsid}&module=xr`,
+        `https://api.maptiler.com/tiles/terrain-rgb-v2/{z}/{x}/{y}.webp?key=${sdkConfig.apiKey}&mtsid=${mtsid}&module=xr`,
       ]
     );
 
@@ -602,103 +638,46 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     await idleAsync(this.map);
   }
 
-  init3DScene(container: HTMLDivElement | null) {
-    const width = container?.clientWidth || 500;
-    const height = container?.clientHeight || 500;
-
-    this.threeScene = new THREE.Scene();
-    this.threeCamera = new THREE.PerspectiveCamera(
-      50,
-      width / height,
-      0.001,
-      1000
-    );
-    this.threeCamera.position.set(0, 10, 10);
-
-    this.threeRenderer = new THREE.WebGLRenderer({ antialias: true });
-    this.threeRenderer.setClearColor(0xffffff, 0);
-    this.threeRenderer.setPixelRatio(window.devicePixelRatio);
-    this.threeRenderer.setSize(width, height);
-    // this.threeRenderer.xr.enabled = true
-    // this.threeControler = this.threeRenderer.xr.getController( 0 );
-
-    if (container) {
-      container.appendChild(this.threeRenderer.domElement);
-      // container.appendChild( ARButton.createButton( this.threeRenderer ) )
-    }
-
-    this.threeOrbitControls = new OrbitControls(
-      this.threeCamera,
-      this.threeRenderer.domElement
-    );
-    // this.itemsToDispose.push(this.threeOrbitControls);
-
-    this.threeTileContainer = new THREE.Object3D();
-    this.threeScene.add(this.threeTileContainer);
-
-    // the scale must really be much smaller than the original object,
-    // maybe it's in meters...
-    this.threeTileContainer.rotateX(-Math.PI / 2);
-
-    // const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    // const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    // const cube = new THREE.Mesh( geometry, material );
-    // this.threeScene.add( cube );
-
-    // const dl = new THREE.DirectionalLight(0xffffff, 1);
-    // dl.position.set(10, 10, 10);
-    // this.threeScene.add(dl);
-
+  
+  init3DScene() {
+    this.threeSceneGLTF = new THREE.Scene();
     // const light = new THREE.AmbientLight( 0xffffff ); // soft white light
-    // this.threeScene.add( light );
+    // this.threeSceneGLTF.add( light );
 
-    // this.animate();
+    // const light2 = new THREE.PointLight( 0xffffff, 100, 0 );
+    // light2.position.set( 0, 2, 0 );
+    // this.threeSceneGLTF.add( light2 );
+    // this.threeSceneGLTF.add(new THREE.PointLightHelper( light2, 1 ));
+
+    // this.threeSceneGLTF.add( new THREE.AxesHelper( 5 ));
+
+
+    this.threeTileContainerGLTF = new THREE.Object3D();
+    this.threeSceneGLTF.add(this.threeTileContainerGLTF);
+    this.threeTileContainerGLTF.rotateX(-Math.PI / 2);
+
+    this.threeSceneUSDZ = new THREE.Scene();
+    this.threeTileContainerUSDZ = new THREE.Object3D();
+    this.threeSceneUSDZ.add(this.threeTileContainerUSDZ);
+    this.threeTileContainerUSDZ.rotateX(-Math.PI / 2);
   }
 
-  buildMapModel() {
-    // remove a potentially existing map mesh from a previous run
-    this.threeTileContainer.clear();
 
-    // Delete all GPU buffers from a previous run
-    this.dispose();
-
-    const modelData = this.createMapMesh();
-
-    const meshWidth = 10;
-    const ratio = (meshWidth * 1) / modelData.widthMeter;
-    this.threeTileContainer.scale.x = ratio;
-    this.threeTileContainer.scale.y = ratio;
-    this.threeTileContainer.scale.z = ratio;
-    this.threeTileContainer.add(modelData.model);
-
-    console.log("DONE");
-  }
-
-  render3D = () => {
-    this.threeOrbitControls.update();
-    this.threeRenderer.render(this.threeScene, this.threeCamera);
-  };
-
-  animate = () => {
-    this.threeRenderer.setAnimationLoop(this.render3D);
-  };
-
-  private createMapMesh(): {
-    model: THREE.Object3D;
-    widthMeter: number;
-    heightMeter: number;
-  } {
+  private async buildMapModel() {
     if (!this.colorData) throw new Error("Color textures is not ready.");
     if (!this.terrainData) throw new Error("Terrain textures is not ready.");
 
-    // const mapTexture = new THREE.DataTexture(this.colorData.pixelData, this.colorData.width, this.colorData.height);
+    // remove a potentially existing map mesh from a previous run
+    this.threeTileContainerGLTF.clear();
+    this.threeTileContainerUSDZ.clear();
+
+    // Delete all GPU buffers from a previous run
+    this.dispose();
 
     console.time("making canvas");
     const colorCanvas = mapTextureDataToCanvas(this.colorData);
     console.timeEnd("making canvas");
 
-    console.log('oioioi');
-    
 
     console.time("tracing borders");
     const ctx = colorCanvas.getContext("2d");
@@ -709,6 +688,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const baseColor = new THREE.Color("#7b8487");
     // const darkerColor = baseColor.clone().offsetHSL(0, 0, -0.2);
     const darkerColor = baseColor.clone().multiplyScalar(0.65);
+    const evenDarkerColor = baseColor.clone().multiplyScalar(0.5);
 
     ctx.fillStyle = `#${baseColor.getHexString()}`;
     const thickness =
@@ -745,15 +725,35 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // @ts-ignore
     mapTexture.colorSpace = THREE.SRGBColorSpace; // for some reason, the TS types do not mention this
+    mapTexture.encoding = THREE.sRGBEncoding;
+    mapTexture.encoding = THREE.LinearEncoding;
     mapTexture.needsUpdate = true;
-
     this.itemsToDispose.push(mapTexture);
-    // this.itemsToDispose.push(terrainTexture);
 
-    const material = new THREE.MeshBasicMaterial({
-      side: THREE.DoubleSide,
+
+
+    // MeshBasicMaterial has a nice sRGB colorimetry that respects the texture
+    // while MeshStandardMaterial looks all washed out and not in par with the original
+    // map texcture.
+    // iOS/iPadOS Quick Look (XR rendering) require the model to be in the USDZ format and this is only compatible
+    // with MeshStandardMaterial.
+    // On Android and generaly on WebXR, GLTF/GLB format is working fine and we can use
+    // MeshBasicMaterial to get better colors.
+    // In the following, we are creating the two material to give us the possibility
+    // to swap from one to the other depending on the target platform we are generating the model for.
+    // By default, the model must still be in GLTF because Model-Viewer's internal scene
+    // expects this format.
+    this.gltfMaterial = new THREE.MeshStandardMaterial({
+      map: mapTexture,
+      color: 0xffffff,
+    });
+
+    this.usdzMaterial = new THREE.MeshStandardMaterial({
       map: mapTexture,
     });
+
+    this.itemsToDispose.push(this.gltfMaterial);
+    this.itemsToDispose.push(this.usdzMaterial);
 
     const bounds = this.mapCaptureBounds;
     const widthMeter = bounds.getSouthEast().distanceTo(bounds.getSouthWest());
@@ -766,7 +766,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.terrainData.width - 1,
       this.terrainData.height - 1
     );
-    const mapMesh = new THREE.Mesh(mapGeom, material);
+    this.mapMeshGLTF = new THREE.Mesh(mapGeom, this.gltfMaterial);
+    this.mapMeshUSDZ = new THREE.Mesh(mapGeom, this.usdzMaterial);
 
     // const elevation = terrain8BitData.pixelData;
     const positionBuf = mapGeom.attributes.position.array;
@@ -797,6 +798,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       positionBuf[i * 3 + 2] = elevation;
     }
 
+    mapGeom.computeVertexNormals();
+
     console.timeEnd("Applying elevation");
 
     this.itemsToDispose.push(mapGeom);
@@ -807,41 +810,51 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       1,
       1
     );
-    const bottomPlaneMat = new THREE.MeshBasicMaterial({
-      side: THREE.BackSide,
-      color: 0x1f1512,
+    const bottomPlaneMat = new THREE.MeshStandardMaterial({
+      color: evenDarkerColor,
     });
-    const bottomPlaneMesh = new THREE.Mesh(bottomPlaneGeom, bottomPlaneMat);
+    const bottomPlaneMeshGLTF = new THREE.Mesh(bottomPlaneGeom, bottomPlaneMat);
+    bottomPlaneMeshGLTF.rotateX(-Math.PI);
 
     this.itemsToDispose.push(bottomPlaneGeom);
     this.itemsToDispose.push(bottomPlaneMat);
 
-    const model = new THREE.Object3D();
-    model.add(mapMesh);
-    model.add(bottomPlaneMesh);
+    // Scaling the model so that it occupies ~the same space on screen,
+    // regardless of its geographic extent
+    // + adding to scene
+    const meshWidth = 10;
+    const ratio = (meshWidth * 1) / widthMeter;
+    this.threeTileContainerGLTF.scale.x = ratio;
+    this.threeTileContainerGLTF.scale.y = ratio;
+    this.threeTileContainerGLTF.scale.z = ratio;
+    this.threeTileContainerGLTF.add(this.mapMeshGLTF);
+    this.threeTileContainerGLTF.add(bottomPlaneMeshGLTF);
 
-    return {
-      model,
-      widthMeter,
-      heightMeter,
-    };
+
+    // The equivalent USDZ scene
+    this.threeTileContainerUSDZ.scale.x = ratio;
+    this.threeTileContainerUSDZ.scale.y = ratio;
+    this.threeTileContainerUSDZ.scale.z = ratio;
+    const bottomPlaneMeshUSDZ = bottomPlaneMeshGLTF.clone()
+    this.threeTileContainerUSDZ.add(this.mapMeshUSDZ);
+    this.threeTileContainerUSDZ.add(bottomPlaneMeshUSDZ);
   }
 
-  dispose() {
+
+  private dispose() {
     while (this.itemsToDispose.length) {
       const itemToDispose = this.itemsToDispose.pop();
       itemToDispose?.dispose();
     }
   }
 
-  export(binary = false) {
+
+  private downloadGLTF(binary = false) {
     this.gltfExporter.parse(
-      this.threeScene,
+      this.threeSceneGLTF,
 
       // success
       (gltfPayload) => {
-        console.log(gltfPayload);
-
         let gltfBlob: Blob;
 
         if (binary) {
@@ -874,12 +887,23 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     );
   }
 
+  private async downloadUSDZ() {
+    const blob = await this.getModelBlobUSDZ();
 
-  async getModelBlob(): Promise<Blob> {
+    const link = document.createElement("a");
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.href = URL.createObjectURL(blob);
+    link.download = "maptiler_scene.usdz";
+    link.click();
+  }
+
+
+  private async getModelBlobGLB(): Promise<Blob> {
     return new Promise((resolve, reject) => {
 
       this.gltfExporter.parse(
-        this.threeScene,
+        this.threeSceneGLTF,
 
         // success
         (gltfPayload) => {
@@ -905,34 +929,32 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
 
+  private async getModelBlobUSDZ(): Promise<Blob> {
+    const exporter = new USDZExporter();
+    const arraybuffer = await exporter.parse(this.threeSceneUSDZ);
+    const blob = new Blob([arraybuffer], {
+      type: 'model/vnd.usdz+zip',
+    });
+
+    return blob;
+  }
+
 
   private async displayModal() {
     if(!typeof(window)) return
     
     const container = this.map.getContainer();
-    console.log(container);
 
-    const modelBlob = await this.getModelBlob();
-    const modelObjectURL = URL.createObjectURL(modelBlob);
-    const modelUrl = new URL(modelObjectURL, self.location.toString());
+    console.time("Making GLB model");
+    const modelBlobGLB = await this.getModelBlobGLB();
+    const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
+    console.timeEnd("Making GLB model")
+    this.emit("computeEnd"); 
 
-    console.log("modelObjectURL", modelObjectURL);
-    console.log("modelUrl", modelUrl);
-    
+    // const modelViewer = document.createElement("model-viewer");
+    const modelViewer = new ModelViewerElement();
+    modelViewer.src = modelObjectURLGLB;
 
-    this.emit("computeEnd");
-    
-
-    // const container = document.getElementById("container");
-    // container.style.width = "100%";
-    // container.style.height = "100%";
-
-    console.log(ModelViewerElement);
-    
-
-    const modelViewer = document.createElement("model-viewer");
-    modelViewer.src = modelObjectURL;
-    // modelViewer.src = "images/maptiler_scene (2).glb"
     modelViewer.setAttribute("ar", "true");
     modelViewer.setAttribute("ar-modes", "webxr quick-look");
     modelViewer.setAttribute("camera-controls", "true");
@@ -942,23 +964,32 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     modelViewer.style.zIndex = "3";
     modelViewer.style.position = "absolute";
     modelViewer.style.background = "#FFFFFF";
-    console.log(modelViewer);
 
     container.appendChild(modelViewer);
-
-    console.log("hello");
 
     const arButton = document.createElement("button");
     arButton.setAttribute("slot", "ar-button");
     arButton.id = "ar-button";
-    arButton.innerText = "View in your space";
+    arButton.style.fontSize = "1.5em";
+    arButton.style.top = "0";
+    arButton.style.position = "absolute";
+    arButton.style.left = "0";
+    arButton.style.right = "0";
+    arButton.style.width = "fit-content";
+    arButton.style.margin = "35px auto";
+    arButton.style.background = "#FFF";
+    arButton.style.border = "2px solid #0eaeff";
+    arButton.style.borderRadius = "5px";
+    arButton.style.padding = "8px 10px";
+    arButton.style.color = "#0eaeff";
+    arButton.innerText = "Enable AR";
     modelViewer.appendChild(arButton);
 
     const closeButton = document.createElement("div");
     closeButton.innerHTML = "[ close ]";
     closeButton.style.position = "absolute";
-    closeButton.style.left = "0";
-    closeButton.style.bottom = "0";
+    closeButton.style.right = "0";
+    closeButton.style.top = "0";
     closeButton.style.zIndex = "4";
     closeButton.style.margin = "4px";
     closeButton.style.cursor = "pointer";

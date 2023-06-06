@@ -1,2 +1,2 @@
-# MapTiler AR Control
+# AR Control from MapTiler SDK
 TODO
