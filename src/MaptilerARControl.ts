@@ -3,12 +3,10 @@
 import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
 import { ModelViewerElement } from "./model-viewer";
 
-
 import EventEmitter from "events";
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { USDZExporter } from "./USDZExporter";
-
 
 type CameraSettings = {
   center: LngLat;
@@ -30,12 +28,12 @@ type TileIndex2D = {
 };
 
 // Small iOS detector borrowed from ModelViewer
-const IS_IOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(self as any).MSStream) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_IOS =
+  (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(self as any).MSStream) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
-
 
 async function loadTexture(filepath: string): Promise<THREE.Texture> {
   return new Promise((resolve, reject) => {
@@ -47,7 +45,7 @@ async function loadTexture(filepath: string): Promise<THREE.Texture> {
       filepath,
 
       // onLoad callback
-      function ( texture ) {
+      function (texture) {
         resolve(texture);
       },
 
@@ -55,11 +53,11 @@ async function loadTexture(filepath: string): Promise<THREE.Texture> {
       undefined,
 
       // onError callback
-      function ( err ) {
+      function (err) {
         reject(err);
       }
     );
-  })
+  });
 }
 
 function removeDomNode(node: any) {
@@ -258,7 +256,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // Creation of the button to show on map
     this.controlButtonContainer = window.document.createElement("div");
-    this.controlButtonContainer.className = "maplibregl-ctrl maplibregl-ctrl-group";
+    this.controlButtonContainer.className =
+      "maplibregl-ctrl maplibregl-ctrl-group";
 
     this.controlButton = window.document.createElement("button");
     this.controlButton.className = "maptiler-ar-ctrl";
@@ -280,22 +279,20 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     this.controlButton.addEventListener("click", async (evt) => {
       this.emit("computeStart");
-      
+
       await this.computeTextures();
       const colorData = this.getColorData();
       const terrainData = this.getTerrainData();
 
       if (!colorData) return;
       if (!terrainData) return;
-      
-      this.buildMapModel();
 
+      this.buildMapModel();
 
       this.displayModal();
       // this.emit("computeEnd");
       // this.downloadUSDZ()
     });
-
 
     this.init3DScene();
     return this.controlButtonContainer;
@@ -303,10 +300,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
   onRemove() {
     this.dispose();
-    this.controlButtonContainer.parentNode?.removeChild(this.controlButtonContainer);
+    this.controlButtonContainer.parentNode?.removeChild(
+      this.controlButtonContainer
+    );
   }
-
-
 
   setMap(m: Map) {
     this.map = m;
@@ -366,6 +363,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.map.setTerrain(null);
     }
 
+    console.log("setting pixel ratio to 4");
+    
     this.map.setPixelRatio(4);
     this.map.triggerRepaint();
 
@@ -526,7 +525,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.emit("endComputeTerrainData", {});
   }
 
-
   private async computeTerrainData() {
     this.emit("startComputeTerrainData", {});
 
@@ -638,19 +636,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     await idleAsync(this.map);
   }
 
-  
   init3DScene() {
     this.threeSceneGLTF = new THREE.Scene();
-    // const light = new THREE.AmbientLight( 0xffffff ); // soft white light
-    // this.threeSceneGLTF.add( light );
-
-    // const light2 = new THREE.PointLight( 0xffffff, 100, 0 );
-    // light2.position.set( 0, 2, 0 );
-    // this.threeSceneGLTF.add( light2 );
-    // this.threeSceneGLTF.add(new THREE.PointLightHelper( light2, 1 ));
-
-    // this.threeSceneGLTF.add( new THREE.AxesHelper( 5 ));
-
 
     this.threeTileContainerGLTF = new THREE.Object3D();
     this.threeSceneGLTF.add(this.threeTileContainerGLTF);
@@ -661,7 +648,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.threeSceneUSDZ.add(this.threeTileContainerUSDZ);
     this.threeTileContainerUSDZ.rotateX(-Math.PI / 2);
   }
-
 
   private async buildMapModel() {
     if (!this.colorData) throw new Error("Color textures is not ready.");
@@ -677,7 +663,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     console.time("making canvas");
     const colorCanvas = mapTextureDataToCanvas(this.colorData);
     console.timeEnd("making canvas");
-
 
     console.time("tracing borders");
     const ctx = colorCanvas.getContext("2d");
@@ -729,8 +714,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     mapTexture.encoding = THREE.LinearEncoding;
     mapTexture.needsUpdate = true;
     this.itemsToDispose.push(mapTexture);
-
-
 
     // MeshBasicMaterial has a nice sRGB colorimetry that respects the texture
     // while MeshStandardMaterial looks all washed out and not in par with the original
@@ -830,16 +813,14 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.threeTileContainerGLTF.add(this.mapMeshGLTF);
     this.threeTileContainerGLTF.add(bottomPlaneMeshGLTF);
 
-
     // The equivalent USDZ scene
     this.threeTileContainerUSDZ.scale.x = ratio;
     this.threeTileContainerUSDZ.scale.y = ratio;
     this.threeTileContainerUSDZ.scale.z = ratio;
-    const bottomPlaneMeshUSDZ = bottomPlaneMeshGLTF.clone()
+    const bottomPlaneMeshUSDZ = bottomPlaneMeshGLTF.clone();
     this.threeTileContainerUSDZ.add(this.mapMeshUSDZ);
     this.threeTileContainerUSDZ.add(bottomPlaneMeshUSDZ);
   }
-
 
   private dispose() {
     while (this.itemsToDispose.length) {
@@ -847,7 +828,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       itemToDispose?.dispose();
     }
   }
-
 
   private downloadGLTF(binary = false) {
     this.gltfExporter.parse(
@@ -898,10 +878,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     link.click();
   }
 
-
   private async getModelBlobGLB(): Promise<Blob> {
     return new Promise((resolve, reject) => {
-
       this.gltfExporter.parse(
         this.threeSceneGLTF,
 
@@ -925,33 +903,30 @@ export class MaptilerARControl extends EventEmitter implements IControl {
           maxTextureSize: 8192,
         }
       );
-    })
+    });
   }
-
 
   private async getModelBlobUSDZ(): Promise<Blob> {
     const exporter = new USDZExporter();
     const arraybuffer = await exporter.parse(this.threeSceneUSDZ);
     const blob = new Blob([arraybuffer], {
-      type: 'model/vnd.usdz+zip',
+      type: "model/vnd.usdz+zip",
     });
 
     return blob;
   }
 
-
   private async displayModal() {
-    if(!typeof(window)) return
-    
+    if (!typeof window) return;
+
     const container = this.map.getContainer();
 
     console.time("Making GLB model");
     const modelBlobGLB = await this.getModelBlobGLB();
     const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
-    console.timeEnd("Making GLB model")
-    this.emit("computeEnd"); 
+    console.timeEnd("Making GLB model");
+    this.emit("computeEnd");
 
-    // const modelViewer = document.createElement("model-viewer");
     const modelViewer = new ModelViewerElement();
     modelViewer.src = modelObjectURLGLB;
 
@@ -964,19 +939,17 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     modelViewer.style.zIndex = "3";
     modelViewer.style.position = "absolute";
     modelViewer.style.background = "#FFFFFF";
-
     container.appendChild(modelViewer);
 
     const arButton = document.createElement("button");
     arButton.setAttribute("slot", "ar-button");
     arButton.id = "ar-button";
-    arButton.style.fontSize = "1.5em";
-    arButton.style.top = "0";
     arButton.style.position = "absolute";
+    arButton.style.top = "0";
     arButton.style.left = "0";
-    arButton.style.right = "0";
+    arButton.style.margin = "35px";
+    arButton.style.fontSize = "1.5em";
     arButton.style.width = "fit-content";
-    arButton.style.margin = "35px auto";
     arButton.style.background = "#FFF";
     arButton.style.border = "2px solid #0eaeff";
     arButton.style.borderRadius = "5px";
@@ -985,21 +958,27 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     arButton.innerText = "Enable AR";
     modelViewer.appendChild(arButton);
 
-    const closeButton = document.createElement("div");
-    closeButton.innerHTML = "[ close ]";
+    const closeButton = document.createElement("button");
+    closeButton.id = "ar-button";
     closeButton.style.position = "absolute";
-    closeButton.style.right = "0";
     closeButton.style.top = "0";
-    closeButton.style.zIndex = "4";
-    closeButton.style.margin = "4px";
-    closeButton.style.cursor = "pointer";
+    closeButton.style.right = "0";
+    closeButton.style.margin = "35px";
+    closeButton.style.fontSize = "1.5em";
+    closeButton.style.width = "fit-content";
+    closeButton.style.background = "#FFF";
+    closeButton.style.border = "2px solid #ff6d00";
+    closeButton.style.borderRadius = "5px";
+    closeButton.style.padding = "8px 10px";
+    closeButton.style.color = "#ff6d00";
+    closeButton.innerText = "Close";
     modelViewer.appendChild(closeButton);
 
-    closeButton.addEventListener("click", async (evt) => {      
+    closeButton.addEventListener("click", async (evt) => {
       this.dispose();
       removeDomNode(arButton);
       removeDomNode(modelViewer);
       removeDomNode(closeButton);
-    })
+    });
   }
 }

@@ -7,12 +7,11 @@
     "type": "git",
     "url": "https://github.com/maptiler/maptiler-ar-control.git"
   },
-  "module": "dist/maptiler-ar-control.mjs",
-  "types": "dist/maptiler-ar-control.d.ts",
+  "types": "dist/maptilerarcontrol.d.ts",
   "author": "Jonathan Lurie",
   "exports": {
     ".": {
-      "import": "./dist/maptiler-ar-control.mjs"
+      "import": "./dist/maptilerarcontrol.mjs"
     }
   },
   "scripts": {
@@ -21,8 +20,7 @@
     "devserve": "rm -rf dist/*; NODE_ENV=development rollup -c -w & serve && fg",
     "format": "prettier --write \"src/**/*.{js,ts,tsx}\"",
     "lint": "eslint --fix \"src/**/*.{js,ts}\"",
-    "doc": "rm -rf docs/*; typedoc",
-    "prepare": "npm run format; npm run lint; npm run build; npm run doc"
+    "prepare": "npm run format; npm run lint; npm run build"
   },
   "license": "MIT",
   "devDependencies": {

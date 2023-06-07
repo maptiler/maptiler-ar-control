@@ -5,9 +5,10 @@ import globals from 'rollup-plugin-node-globals';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
-import pkg from './package.json';
 
 const pkgName = "maptilerarcontrol";
+
+
 
 const bundles = [
   // ES module, not minified + sourcemap
@@ -16,13 +17,11 @@ const bundles = [
       json(),
       esbuild(),
     ],
-    output: [
-      {
-        file: `dist/${pkgName}.mjs`,
-        format: "es",
-        sourcemap: true
-      }
-    ],
+    output: {
+      file: `dist/${pkgName}.mjs`,
+      format: "es",
+      sourcemap: true,
+    },
     input: "src/index.ts",
     watch: {
       include: 'src/**'
