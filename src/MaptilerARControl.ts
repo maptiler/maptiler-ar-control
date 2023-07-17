@@ -364,7 +364,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
 
     console.log("setting pixel ratio to 4");
-    
+
     this.map.setPixelRatio(4);
     this.map.triggerRepaint();
 
@@ -381,7 +381,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private grabGlData(): MapTextureData {
     // Gettings the WebGL context from the map's canvas
     const canvas = this.map.getCanvas();
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl2");
     if (!gl) throw new Error("The WebGL context of the map is undefined");
 
     // getting the gl drawing buffer

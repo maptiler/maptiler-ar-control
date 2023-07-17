@@ -16310,7 +16310,7 @@ class TextureUtils extends EventDispatcher {
       generateMipmaps: false,
       type: HalfFloatType,
       format: RGBAFormat,
-      encoding: LinearSRGBColorSpace ,
+      encoding: LinearSRGBColorSpace,
       depthBuffer: true,
     });
     const cubeCamera = new CubeCamera(0.1, 100, cubeTarget);
@@ -16319,7 +16319,7 @@ class TextureUtils extends EventDispatcher {
     const outputEncoding = renderer.outputEncoding;
     const toneMapping = renderer.toneMapping;
     renderer.toneMapping = NoToneMapping;
-    renderer.outputEncoding = LinearSRGBColorSpace ;
+    renderer.outputEncoding = LinearSRGBColorSpace;
     cubeCamera.update(renderer, scene);
     this.blurCubemap(cubeTarget, GENERATED_SIGMA);
     renderer.toneMapping = toneMapping;
@@ -22176,11 +22176,15 @@ function imageToCanvas(image, color, flipY) {
       image instanceof OffscreenCanvas) ||
     (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap)
   ) {
-    const scale = 1024 / Math.max(image.width, image.height);
+    // const scale = 1024 / Math.max(image.width, image.height);
+
+    // const canvas = document.createElement("canvas");
+    // canvas.width = image.width * Math.min(1, scale);
+    // canvas.height = image.height * Math.min(1, scale);
 
     const canvas = document.createElement("canvas");
-    canvas.width = image.width * Math.min(1, scale);
-    canvas.height = image.height * Math.min(1, scale);
+    canvas.width = image.width;
+    canvas.height = image.height;
 
     const context = canvas.getContext("2d");
 

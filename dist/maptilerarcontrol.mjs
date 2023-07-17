@@ -16741,10 +16741,9 @@ class USDZExporter$1 {
 }
 function imageToCanvas$1(image, color, flipY) {
   if (typeof HTMLImageElement !== "undefined" && image instanceof HTMLImageElement || typeof HTMLCanvasElement !== "undefined" && image instanceof HTMLCanvasElement || typeof OffscreenCanvas !== "undefined" && image instanceof OffscreenCanvas || typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
-    const scale = 1024 / Math.max(image.width, image.height);
     const canvas = document.createElement("canvas");
-    canvas.width = image.width * Math.min(1, scale);
-    canvas.height = image.height * Math.min(1, scale);
+    canvas.width = image.width;
+    canvas.height = image.height;
     const context = canvas.getContext("2d");
     if (flipY === true) {
       context.translate(0, canvas.height);
@@ -18690,7 +18689,7 @@ class MaptilerARControl extends EventEmitter {
   }
   grabGlData() {
     const canvas = this.map.getCanvas();
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl2");
     if (!gl)
       throw new Error("The WebGL context of the map is undefined");
     const pixels = new Uint8Array(
