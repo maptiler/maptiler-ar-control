@@ -213,6 +213,53 @@ function idleAsync(map: Map) {
   });
 }
 
+
+export type MaptilerARControlOptions = {
+  showButton?: boolean,
+  background?: string,
+  closeButtonStyle?: any,
+  closeButtonText?: string,
+  arButtonStyle?: any,
+  arButtonText?: string,
+  edgeColor?: string,
+};
+
+
+const defaultOptionValues: MaptilerARControlOptions = {
+  showButton: true,
+  background: "#FFFFFF",
+  closeButtonStyle: {
+    position: "absolute",
+    top: "0",
+    right: "0",
+    margin: "35px",
+    fontSize: "1.5em",
+    width: "fit-content",
+    background: "#FFF",
+    border: "2px solid #ff6d00",
+    borderRadius: "5px",
+    padding: "8px 10px",
+    color: "#ff6d00",
+  },
+  closeButtonText: "Close",
+  arButtonStyle: {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    margin: "35px",
+    fontSize: "1.5em",
+    width: "fit-content",
+    background: "#FFF",
+    border: "2px solid #0eaeff",
+    borderRadius: "5px",
+    padding: "8px 10px",
+    color: "#0eaeff",
+  },
+  arButtonText: "Enable AR",
+  edgeColor: "#7b8487",
+}
+
+
 export class MaptilerARControl extends EventEmitter implements IControl {
   private controlButton!: HTMLButtonElement;
   private controlButtonContainer!: HTMLDivElement;
@@ -245,10 +292,19 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     | THREE.MeshStandardMaterial
   > = [];
   private gltfExporter: GLTFExporter = new GLTFExporter();
+  private lock = false;
+  private options: MaptilerARControlOptions;
+  private arButton: HTMLElement = null;
+  private closeButton: HTMLElement = null;
+  private modelViewer: ModelViewerElement = null;
 
-  constructor(map: Map | null = null) {
+  constructor(options: MaptilerARControlOptions = {}) {
     super();
-    if (map !== null) this.setMap(map);
+
+    this.options = {
+      ...defaultOptionValues,
+      ...options,
+    }
   }
 
   onAdd(map: maplibregl.Map): HTMLElement {
@@ -256,47 +312,58 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // Creation of the button to show on map
     this.controlButtonContainer = window.document.createElement("div");
-    this.controlButtonContainer.className =
-      "maplibregl-ctrl maplibregl-ctrl-group";
 
-    this.controlButton = window.document.createElement("button");
-    this.controlButton.className = "maptiler-ar-ctrl";
-    this.controlButtonContainer.appendChild(this.controlButton);
+    if (this.options.showButton) {
+      this.controlButtonContainer.className =
+        "maplibregl-ctrl maplibregl-ctrl-group";
 
-    const iconSpan = window.document.createElement("span");
-    iconSpan.className = "maplibregl-ctrl-icon";
-    iconSpan.setAttribute("aria-hidden", "true");
-    this.controlButton.appendChild(iconSpan);
-    iconSpan.innerText = "AR";
+      this.controlButton = window.document.createElement("button");
+      this.controlButton.className = "maptiler-ar-ctrl";
+      this.controlButtonContainer.appendChild(this.controlButton);
 
-    iconSpan.style.textAlign = "center";
-    iconSpan.style.fontFamily = "sans-serif";
-    iconSpan.style.fontWeight = "600";
-    iconSpan.style.fontSize = "13px";
-    iconSpan.style.paddingTop = "10px";
-    iconSpan.style.color = "#5c636e";
-    this.controlButton.type = "button";
+      const iconSpan = window.document.createElement("span");
+      iconSpan.className = "maplibregl-ctrl-icon";
+      iconSpan.setAttribute("aria-hidden", "true");
+      this.controlButton.appendChild(iconSpan);
+      iconSpan.innerHTML = `
+      <svg width="100%" height="100%" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+        <g transform="matrix(0.718295,0,0,0.718295,6.75661,6.76523)">
+            <path d="M22.197,39.734L11.472,33.439C10.949,33.118 10.543,32.696 10.253,32.171C9.963,31.646 9.819,31.082 9.819,30.48L9.819,17.941C9.819,17.34 9.963,16.776 10.253,16.251C10.543,15.726 10.949,15.303 11.472,14.983L22.247,8.576C22.777,8.27 23.362,8.116 24,8.116C24.638,8.116 25.223,8.27 25.753,8.576L36.528,14.983C37.051,15.303 37.457,15.726 37.747,16.251C38.037,16.776 38.182,17.34 38.182,17.941L38.182,30.48C38.182,31.082 38.032,31.646 37.734,32.171C37.436,32.696 37.017,33.118 36.478,33.439L25.603,39.734C25.062,40.048 24.491,40.205 23.892,40.205C23.292,40.205 22.727,40.048 22.197,39.734ZM22.5,35.925L22.5,25.044L13.275,19.741L13.275,30.373L22.5,35.925ZM25.5,35.925L34.775,30.373L34.775,19.741L25.5,25.044L25.5,35.925ZM3.701,13.426L3.701,7.108C3.701,6.159 4.033,5.353 4.696,4.687C5.359,4.022 6.163,3.689 7.108,3.689L13.426,3.689L13.426,6.976L6.976,6.976L6.976,13.426L3.701,13.426ZM13.426,44.299L7.108,44.299C6.163,44.299 5.359,43.967 4.696,43.304C4.033,42.641 3.701,41.837 3.701,40.892L3.701,34.574L6.976,34.574L6.976,41.024L13.426,41.024L13.426,44.299ZM34.574,44.299L34.574,41.024L41.024,41.024L41.024,34.574L44.311,34.574L44.311,40.892C44.311,41.837 43.978,42.641 43.313,43.304C42.647,43.967 41.841,44.299 40.892,44.299L34.574,44.299ZM41.024,13.426L41.024,6.976L34.574,6.976L34.574,3.689L40.892,3.689C41.841,3.689 42.647,4.022 43.313,4.687C43.978,5.353 44.311,6.159 44.311,7.108L44.311,13.426L41.024,13.426ZM24,22.336L33.237,16.991L24,11.685L14.763,16.991L24,22.336Z" style="fill:rgb(68,73,82);fill-rule:nonzero;"/>
+        </g>
+      </svg>
+      `
 
-    this.controlButton.addEventListener("click", async (evt) => {
-      this.emit("computeStart");
+      this.controlButton.type = "button";
 
-      await this.computeTextures();
-      const colorData = this.getColorData();
-      const terrainData = this.getTerrainData();
-
-      if (!colorData) return;
-      if (!terrainData) return;
-
-      this.buildMapModel();
-
-      this.displayModal();
-      // this.emit("computeEnd");
-      // this.downloadUSDZ()
-    });
+      this.controlButton.addEventListener("click", async (evt) => {
+        this.run();
+      });
+    }
 
     this.init3DScene();
     return this.controlButtonContainer;
   }
+
+  async run() {
+    if (this.lock) return;
+    this.lock = true;    
+    this.emit("computeStart");
+
+    await this.computeTextures();
+    const colorData = this.getColorData();
+    const terrainData = this.getTerrainData();
+
+    if (!colorData) return;
+    if (!terrainData) return;
+
+    this.buildMapModel();
+
+    this.displayModal();
+    // this.emit("computeEnd");
+    // this.downloadUSDZ()
+    this.lock = false;
+  }
+
 
   onRemove() {
     this.dispose();
@@ -670,7 +737,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (!ctx) throw new Error("Color texture not available");
 
     // Use a base color and darken it to use on the north/south side
-    const baseColor = new THREE.Color("#7b8487");
+    const baseColor = new THREE.Color(this.options.edgeColor);
     // const darkerColor = baseColor.clone().offsetHSL(0, 0, -0.2);
     const darkerColor = baseColor.clone().multiplyScalar(0.65);
     const evenDarkerColor = baseColor.clone().multiplyScalar(0.5);
@@ -927,58 +994,53 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     console.timeEnd("Making GLB model");
     this.emit("computeEnd");
 
-    const modelViewer = new ModelViewerElement();
-    modelViewer.src = modelObjectURLGLB;
+    this.modelViewer = new ModelViewerElement();
+    this.modelViewer.src = modelObjectURLGLB;
 
-    modelViewer.setAttribute("ar", "true");
-    modelViewer.setAttribute("ar-modes", "webxr quick-look");
-    modelViewer.setAttribute("camera-controls", "true");
-    modelViewer.setAttribute("shadow-intensity", "1");
-    modelViewer.style.width = "100%";
-    modelViewer.style.height = "100%";
-    modelViewer.style.zIndex = "3";
-    modelViewer.style.position = "absolute";
-    modelViewer.style.background = "#FFFFFF";
-    container.appendChild(modelViewer);
+    this.modelViewer.setAttribute("ar", "true");
+    this.modelViewer.setAttribute("ar-modes", "webxr quick-look");
+    this.modelViewer.setAttribute("camera-controls", "true");
+    this.modelViewer.setAttribute("shadow-intensity", "1");
+    this.modelViewer.style.width = "100%";
+    this.modelViewer.style.height = "100%";
+    this.modelViewer.style.zIndex = "3";
+    this.modelViewer.style.position = "absolute";
+    this.modelViewer.style.background = this.options.background;
+    container.appendChild(this.modelViewer);
 
-    const arButton = document.createElement("button");
-    arButton.setAttribute("slot", "ar-button");
-    arButton.id = "ar-button";
-    arButton.style.position = "absolute";
-    arButton.style.top = "0";
-    arButton.style.left = "0";
-    arButton.style.margin = "35px";
-    arButton.style.fontSize = "1.5em";
-    arButton.style.width = "fit-content";
-    arButton.style.background = "#FFF";
-    arButton.style.border = "2px solid #0eaeff";
-    arButton.style.borderRadius = "5px";
-    arButton.style.padding = "8px 10px";
-    arButton.style.color = "#0eaeff";
-    arButton.innerText = "Enable AR";
-    modelViewer.appendChild(arButton);
+    this.arButton = document.createElement("button");
+    // this.arButton.setAttribute("slot", "ar-button");
+    this.arButton.id = "ar-button";
 
-    const closeButton = document.createElement("button");
-    closeButton.id = "ar-button";
-    closeButton.style.position = "absolute";
-    closeButton.style.top = "0";
-    closeButton.style.right = "0";
-    closeButton.style.margin = "35px";
-    closeButton.style.fontSize = "1.5em";
-    closeButton.style.width = "fit-content";
-    closeButton.style.background = "#FFF";
-    closeButton.style.border = "2px solid #ff6d00";
-    closeButton.style.borderRadius = "5px";
-    closeButton.style.padding = "8px 10px";
-    closeButton.style.color = "#ff6d00";
-    closeButton.innerText = "Close";
-    modelViewer.appendChild(closeButton);
+    Object.keys(this.options.arButtonStyle).forEach(el => {
+      this.arButton.style[el] = this.options.arButtonStyle[el];
+    })
 
-    closeButton.addEventListener("click", async (evt) => {
-      this.dispose();
-      removeDomNode(arButton);
-      removeDomNode(modelViewer);
-      removeDomNode(closeButton);
+    this.arButton.innerText = this.options.arButtonText;
+    this.modelViewer.appendChild(this.arButton);
+
+    this.closeButton = document.createElement("button");
+    this.closeButton.id = "ar-button";
+
+    Object.keys(this.options.closeButtonStyle).forEach(el => {
+      this.closeButton.style[el] = this.options.closeButtonStyle[el];
+    })
+    this.closeButton.innerText = this.options.closeButtonText;
+    this.modelViewer.appendChild(this.closeButton);
+
+    // this.modelViewer.activateAR();
+
+    this.closeButton.addEventListener("click", async (evt) => {
+      this.close()
     });
   }
+
+
+  close() {
+    this.dispose();
+    removeDomNode(this.arButton);
+    removeDomNode(this.modelViewer);
+    removeDomNode(this.closeButton);
+  }
+
 }

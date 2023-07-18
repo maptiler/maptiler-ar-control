@@ -8,6 +8,15 @@ declare type MapTextureData = {
     bounds: LngLatBounds;
 };
 declare function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement;
+declare type MaptilerARControlOptions = {
+    showButton?: boolean;
+    background?: string;
+    closeButtonStyle?: any;
+    closeButtonText?: string;
+    arButtonStyle?: any;
+    arButtonText?: string;
+    edgeColor?: string;
+};
 declare class MaptilerARControl extends EventEmitter implements IControl {
     private controlButton;
     private controlButtonContainer;
@@ -32,8 +41,14 @@ declare class MaptilerARControl extends EventEmitter implements IControl {
     private mapMeshUSDZ;
     private itemsToDispose;
     private gltfExporter;
-    constructor(map?: Map | null);
+    private lock;
+    private options;
+    private arButton;
+    private closeButton;
+    private modelViewer;
+    constructor(options?: MaptilerARControlOptions);
     onAdd(map: maplibregl.Map): HTMLElement;
+    run(): Promise<void>;
     onRemove(): void;
     setMap(m: Map): void;
     getMeterPerPixelCenter(): number;
@@ -63,6 +78,7 @@ declare class MaptilerARControl extends EventEmitter implements IControl {
     private getModelBlobGLB;
     private getModelBlobUSDZ;
     private displayModal;
+    close(): void;
 }
 
-export { MaptilerARControl, mapTextureDataToCanvas };
+export { MaptilerARControl, MaptilerARControlOptions, mapTextureDataToCanvas };

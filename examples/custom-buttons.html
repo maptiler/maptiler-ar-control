@@ -1,0 +1,116 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MapTiler AR Control</title>
+    <!-- Importing MapTiler SDK -->
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/latest/maptiler-sdk.umd.min.js"></script>
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/latest/maptiler-sdk.css" rel="stylesheet" />
+
+    <!-- Importing MapTiler AR Control -->
+    <script src="../dist/maptilerarcontrol.js"></script>
+
+    <style>
+      html, body {
+        margin: 0;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+
+      #overlay {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #3e4c55;
+        z-index: 3;
+        display: none;
+      }
+
+      #overlay div {
+        color: white;
+        position: absolute;
+        width: fit-content;
+        height: fit-content;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        top: 0;
+        margin: auto;
+        font-size: 2em;
+        font-weight: 200;
+        border: 4px solid white;
+        padding: 30px;
+        background: #0000001a;
+        font-family: system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay">
+      <div>COMPUTING 3D MODEL</div>
+    </div>
+
+    <div id="map"></div>
+    <script>
+
+      function getKey() {
+        const key = (new URLSearchParams(location.search)).get("key");
+        if (!key) {
+          alert("The MapTiler Cloud key is missing. Add yours in the URL with \n?key=YOUR_KEY\nOr get one for free at https://www.maptiler.com/");
+          return "_MISSING_MAPTILER_API_KEY_";
+        }
+        return key;
+      }
+
+      const overlay = document.getElementById("overlay");
+
+      // Setting up the config
+      maptilersdk.config.apiKey = getKey();
+
+      // Creating a map
+      const map = new maptilersdk.Map({
+        container: 'map',
+        style: maptilersdk.MapStyle.OUTDOOR,
+        terrain: true,
+        hash: true,
+        geolocate: true,
+      });
+
+      // Waiting for the map to be ready
+      map.on("load", (e) => {
+        const arControl = new maptilerarcontrol.MaptilerARControl({
+          // background: "#F00",
+          closeButtonStyle: {
+            color: "red"
+          },
+          closeButtonText: "Select another area",
+          arButtonStyle: {
+            color: "blue"
+          },
+          arButtonText: "Show in my space",
+          edgeColor: "#ff69b6",
+        });
+
+        console.log(arControl);
+
+        arControl.on("computeStart", (e) => {
+          overlay.style.display = "inherit";
+        })
+
+        arControl.on("computeEnd", (e) => {
+          overlay.style.display = "none";
+        })
+
+        map.addControl(arControl, "top-left");
+      })
+
+
+    </script>
+  </body>
+</html>
