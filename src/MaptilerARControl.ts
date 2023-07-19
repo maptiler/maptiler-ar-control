@@ -852,11 +852,28 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const w = this.terrainData.width;
     const h = this.terrainData.height;
 
+    // detecting the minimum elevation
+    let minEle = +Infinity;
     for (let i = 0; i < positionBuf.length / 3; i += 1) {
       const r = this.terrainData.pixelData[i * 4];
       const g = this.terrainData.pixelData[i * 4 + 1];
       const b = this.terrainData.pixelData[i * 4 + 2];
-      let elevation = -10000 + (r * 256 * 256 + g * 256 + b) * 0.1;
+      const elevation = -10000 + (r * 256 * 256 + g * 256 + b) * 0.1;
+      if (elevation < minEle) {
+        minEle = elevation;
+      }
+    }
+
+    console.log("minEle", minEle);
+
+    // Flooring the minimum elevation to the lower hundred meter
+    minEle = Math.max(0, ~~(minEle / 100) * 100 - 100);
+
+    for (let i = 0; i < positionBuf.length / 3; i += 1) {
+      const r = this.terrainData.pixelData[i * 4];
+      const g = this.terrainData.pixelData[i * 4 + 1];
+      const b = this.terrainData.pixelData[i * 4 + 2];
+      let elevation = -10000 + (r * 256 * 256 + g * 256 + b) * 0.1 - minEle;
 
       const xInput = i % w;
       const yInput = ~~(i / w);
@@ -898,7 +915,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     // Scaling the model so that it occupies ~the same space on screen,
     // regardless of its geographic extent
     // + adding to scene
-    const meshWidth = 10;
+    const meshWidth = 1; // 1 meter of side in world space
     const ratio = (meshWidth * 1) / widthMeter;
     this.threeTileContainerGLTF.scale.x = ratio;
     this.threeTileContainerGLTF.scale.y = ratio;
@@ -1035,7 +1052,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     container.appendChild(this.modelViewer);
 
     this.arButton = document.createElement("button");
-    // this.arButton.setAttribute("slot", "ar-button");
+    this.arButton.setAttribute("slot", "ar-button");
     this.arButton.id = "maptiler-ar-enable-button";
 
     // Styling the AR button

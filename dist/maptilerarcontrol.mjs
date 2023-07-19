@@ -19082,11 +19082,23 @@ class MaptilerARControl extends EventEmitter {
       console.time("Applying elevation");
       const w = this.terrainData.width;
       const h = this.terrainData.height;
+      let minEle = Infinity;
       for (let i = 0; i < positionBuf.length / 3; i += 1) {
         const r = this.terrainData.pixelData[i * 4];
         const g = this.terrainData.pixelData[i * 4 + 1];
         const b = this.terrainData.pixelData[i * 4 + 2];
-        let elevation = -1e4 + (r * 256 * 256 + g * 256 + b) * 0.1;
+        const elevation = -1e4 + (r * 256 * 256 + g * 256 + b) * 0.1;
+        if (elevation < minEle) {
+          minEle = elevation;
+        }
+      }
+      console.log("minEle", minEle);
+      minEle = Math.max(0, ~~(minEle / 100) * 100 - 100);
+      for (let i = 0; i < positionBuf.length / 3; i += 1) {
+        const r = this.terrainData.pixelData[i * 4];
+        const g = this.terrainData.pixelData[i * 4 + 1];
+        const b = this.terrainData.pixelData[i * 4 + 2];
+        let elevation = -1e4 + (r * 256 * 256 + g * 256 + b) * 0.1 - minEle;
         const xInput = i % w;
         const yInput = ~~(i / w);
         if (xInput === 0 || yInput === 0 || xInput === w - 1 || yInput === h - 1) {
@@ -19110,7 +19122,7 @@ class MaptilerARControl extends EventEmitter {
       bottomPlaneMeshGLTF.rotateX(-Math.PI);
       this.itemsToDispose.push(bottomPlaneGeom);
       this.itemsToDispose.push(bottomPlaneMat);
-      const meshWidth = 10;
+      const meshWidth = 1;
       const ratio = meshWidth * 1 / widthMeter;
       this.threeTileContainerGLTF.scale.x = ratio;
       this.threeTileContainerGLTF.scale.y = ratio;
@@ -19226,6 +19238,7 @@ class MaptilerARControl extends EventEmitter {
       this.modelViewer.style.background = this.options.background;
       container.appendChild(this.modelViewer);
       this.arButton = document.createElement("button");
+      this.arButton.setAttribute("slot", "ar-button");
       this.arButton.id = "maptiler-ar-enable-button";
       if (this.options.arButtonClassName) {
         this.arButton.classList.add(this.options.arButtonClassName);
