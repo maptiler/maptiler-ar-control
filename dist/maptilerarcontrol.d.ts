@@ -11,10 +11,10 @@ declare function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement;
 declare type MaptilerARControlOptions = {
     showButton?: boolean;
     background?: string;
-    closeButtonStyle?: any;
-    closeButtonText?: string;
-    arButtonStyle?: any;
-    arButtonText?: string;
+    closeButtonClassName?: string;
+    closeButtonContent?: string | HTMLElement;
+    arButtonClassName?: string;
+    arButtonContent?: string;
     edgeColor?: string;
 };
 declare class MaptilerARControl extends EventEmitter implements IControl {

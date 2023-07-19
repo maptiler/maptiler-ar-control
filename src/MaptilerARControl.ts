@@ -7,6 +7,7 @@ import EventEmitter from "events";
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { USDZExporter } from "./USDZExporter";
+import { addWatermarkToContext } from "./tools";
 
 type CameraSettings = {
   center: LngLat;
@@ -34,6 +35,23 @@ const IS_IOS =
 
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
+
+function loadImgAsync(path: string): Promise<Image> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function() {
+      resolve(img);
+    }
+
+    img.onerror = function(e) {
+      reject(e);
+    } 
+    img.src = path;
+  })
+}
+
+
 
 async function loadTexture(filepath: string): Promise<THREE.Texture> {
   return new Promise((resolve, reject) => {
@@ -217,10 +235,10 @@ function idleAsync(map: Map) {
 export type MaptilerARControlOptions = {
   showButton?: boolean,
   background?: string,
-  closeButtonStyle?: any,
-  closeButtonText?: string,
-  arButtonStyle?: any,
-  arButtonText?: string,
+  closeButtonClassName?: string,
+  closeButtonContent?: string | HTMLElement,
+  arButtonClassName?: string,
+  arButtonContent?: string,
   edgeColor?: string,
 };
 
@@ -228,35 +246,39 @@ export type MaptilerARControlOptions = {
 const defaultOptionValues: MaptilerARControlOptions = {
   showButton: true,
   background: "#FFFFFF",
-  closeButtonStyle: {
-    position: "absolute",
-    top: "0",
-    right: "0",
-    margin: "35px",
-    fontSize: "1.5em",
-    width: "fit-content",
-    background: "#FFF",
-    border: "2px solid #ff6d00",
-    borderRadius: "5px",
-    padding: "8px 10px",
-    color: "#ff6d00",
-  },
-  closeButtonText: "Close",
-  arButtonStyle: {
-    position: "absolute",
-    top: "0",
-    left: "0",
-    margin: "35px",
-    fontSize: "1.5em",
-    width: "fit-content",
-    background: "#FFF",
-    border: "2px solid #0eaeff",
-    borderRadius: "5px",
-    padding: "8px 10px",
-    color: "#0eaeff",
-  },
-  arButtonText: "Enable AR",
+  closeButtonClassName: "",
+  arButtonClassName: "",
+  closeButtonContent: "Close",
+  arButtonContent: "Enable AR",
   edgeColor: "#7b8487",
+}
+
+const defaultArButtonStyle = {
+  position: "absolute",
+  top: "0",
+  left: "0",
+  margin: "35px",
+  fontSize: "1.5em",
+  width: "fit-content",
+  background: "#FFF",
+  border: "2px solid #0eaeff",
+  borderRadius: "5px",
+  padding: "8px 10px",
+  color: "#0eaeff",
+};
+
+const defaultCloseButtonStyle = {
+  position: "absolute",
+  top: "0",
+  right: "0",
+  margin: "35px",
+  fontSize: "1.5em",
+  width: "fit-content",
+  background: "#FFF",
+  border: "2px solid #ff6d00",
+  borderRadius: "5px",
+  padding: "8px 10px",
+  color: "#ff6d00",
 }
 
 
@@ -345,6 +367,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   async run() {
+    try {
+      this.close();
+    } catch(e) {}
+
     if (this.lock) return;
     this.lock = true;    
     this.emit("computeStart");
@@ -356,7 +382,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (!colorData) return;
     if (!terrainData) return;
 
-    this.buildMapModel();
+    await this.buildMapModel();
 
     this.displayModal();
     // this.emit("computeEnd");
@@ -720,6 +746,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (!this.colorData) throw new Error("Color textures is not ready.");
     if (!this.terrainData) throw new Error("Terrain textures is not ready.");
 
+    
+
     // remove a potentially existing map mesh from a previous run
     this.threeTileContainerGLTF.clear();
     this.threeTileContainerUSDZ.clear();
@@ -736,6 +764,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     if (!ctx) throw new Error("Color texture not available");
 
+
     // Use a base color and darken it to use on the north/south side
     const baseColor = new THREE.Color(this.options.edgeColor);
     // const darkerColor = baseColor.clone().offsetHSL(0, 0, -0.2);
@@ -745,6 +774,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     ctx.fillStyle = `#${baseColor.getHexString()}`;
     const thickness =
       Math.ceil(this.colorData.width / this.terrainData.width) * 1.5;
+
+    await addWatermarkToContext(ctx, thickness * 2, Math.max(256, colorCanvas.width / 10));
 
     // upper band
     ctx.fillRect(0, 0, colorCanvas.width - 1, thickness);
@@ -769,6 +800,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       colorCanvas.width - 1,
       colorCanvas.height - 1
     );
+
+
+    
 
     console.timeEnd("tracing borders");
 
@@ -1010,22 +1044,45 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     this.arButton = document.createElement("button");
     // this.arButton.setAttribute("slot", "ar-button");
-    this.arButton.id = "ar-button";
+    this.arButton.id = "maptiler-ar-enable-button";
 
-    Object.keys(this.options.arButtonStyle).forEach(el => {
-      this.arButton.style[el] = this.options.arButtonStyle[el];
-    })
+    // Styling the AR button
+    if (this.options.arButtonClassName) {
+      this.arButton.classList.add(this.options.arButtonClassName);
+    } else {
+      Object.keys(defaultArButtonStyle).forEach(el => {
+        this.arButton.style[el] = defaultArButtonStyle[el];
+      })
+    }
 
-    this.arButton.innerText = this.options.arButtonText;
+    // Adding content to the AR button
+    if (typeof this.options.arButtonContent === "string") {
+      this.arButton.innerHTML = this.options.arButtonContent;
+    } else {
+      this.arButton.appendChild(this.options.arButtonContent);
+    }
+
     this.modelViewer.appendChild(this.arButton);
 
     this.closeButton = document.createElement("button");
-    this.closeButton.id = "ar-button";
+    this.closeButton.id = "maptiler-ar-close-button";
 
-    Object.keys(this.options.closeButtonStyle).forEach(el => {
-      this.closeButton.style[el] = this.options.closeButtonStyle[el];
-    })
-    this.closeButton.innerText = this.options.closeButtonText;
+    // Styling the close button
+    if (this.options.closeButtonClassName) {
+      this.closeButton.classList.add(this.options.closeButtonClassName);
+    } else {
+      Object.keys(defaultCloseButtonStyle).forEach(el => {
+        this.closeButton.style[el] = defaultCloseButtonStyle[el];
+      })
+    }
+
+    // Adding content to the close button
+    if (typeof this.options.closeButtonContent === "string") {
+      this.closeButton.innerHTML = this.options.closeButtonContent;
+    } else {
+      this.closeButton.appendChild(this.options.closeButtonContent);
+    }
+    
     this.modelViewer.appendChild(this.closeButton);
 
     // this.modelViewer.activateAR();
