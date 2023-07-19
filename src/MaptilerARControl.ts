@@ -40,18 +40,16 @@ function loadImgAsync(path: string): Promise<Image> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.onload = function() {
+    img.onload = function () {
       resolve(img);
-    }
+    };
 
-    img.onerror = function(e) {
+    img.onerror = function (e) {
       reject(e);
-    } 
+    };
     img.src = path;
-  })
+  });
 }
-
-
 
 async function loadTexture(filepath: string): Promise<THREE.Texture> {
   return new Promise((resolve, reject) => {
@@ -231,17 +229,15 @@ function idleAsync(map: Map) {
   });
 }
 
-
 export type MaptilerARControlOptions = {
-  showButton?: boolean,
-  background?: string,
-  closeButtonClassName?: string,
-  closeButtonContent?: string | HTMLElement,
-  arButtonClassName?: string,
-  arButtonContent?: string,
-  edgeColor?: string,
+  showButton?: boolean;
+  background?: string;
+  closeButtonClassName?: string;
+  closeButtonContent?: string | HTMLElement;
+  arButtonClassName?: string;
+  arButtonContent?: string;
+  edgeColor?: string;
 };
-
 
 const defaultOptionValues: MaptilerARControlOptions = {
   showButton: true,
@@ -251,7 +247,7 @@ const defaultOptionValues: MaptilerARControlOptions = {
   closeButtonContent: "Close",
   arButtonContent: "Enable AR",
   edgeColor: "#7b8487",
-}
+};
 
 const defaultArButtonStyle = {
   position: "absolute",
@@ -279,8 +275,7 @@ const defaultCloseButtonStyle = {
   borderRadius: "5px",
   padding: "8px 10px",
   color: "#ff6d00",
-}
-
+};
 
 export class MaptilerARControl extends EventEmitter implements IControl {
   private controlButton!: HTMLButtonElement;
@@ -326,7 +321,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.options = {
       ...defaultOptionValues,
       ...options,
-    }
+    };
   }
 
   onAdd(map: maplibregl.Map): HTMLElement {
@@ -353,7 +348,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
             <path d="M22.197,39.734L11.472,33.439C10.949,33.118 10.543,32.696 10.253,32.171C9.963,31.646 9.819,31.082 9.819,30.48L9.819,17.941C9.819,17.34 9.963,16.776 10.253,16.251C10.543,15.726 10.949,15.303 11.472,14.983L22.247,8.576C22.777,8.27 23.362,8.116 24,8.116C24.638,8.116 25.223,8.27 25.753,8.576L36.528,14.983C37.051,15.303 37.457,15.726 37.747,16.251C38.037,16.776 38.182,17.34 38.182,17.941L38.182,30.48C38.182,31.082 38.032,31.646 37.734,32.171C37.436,32.696 37.017,33.118 36.478,33.439L25.603,39.734C25.062,40.048 24.491,40.205 23.892,40.205C23.292,40.205 22.727,40.048 22.197,39.734ZM22.5,35.925L22.5,25.044L13.275,19.741L13.275,30.373L22.5,35.925ZM25.5,35.925L34.775,30.373L34.775,19.741L25.5,25.044L25.5,35.925ZM3.701,13.426L3.701,7.108C3.701,6.159 4.033,5.353 4.696,4.687C5.359,4.022 6.163,3.689 7.108,3.689L13.426,3.689L13.426,6.976L6.976,6.976L6.976,13.426L3.701,13.426ZM13.426,44.299L7.108,44.299C6.163,44.299 5.359,43.967 4.696,43.304C4.033,42.641 3.701,41.837 3.701,40.892L3.701,34.574L6.976,34.574L6.976,41.024L13.426,41.024L13.426,44.299ZM34.574,44.299L34.574,41.024L41.024,41.024L41.024,34.574L44.311,34.574L44.311,40.892C44.311,41.837 43.978,42.641 43.313,43.304C42.647,43.967 41.841,44.299 40.892,44.299L34.574,44.299ZM41.024,13.426L41.024,6.976L34.574,6.976L34.574,3.689L40.892,3.689C41.841,3.689 42.647,4.022 43.313,4.687C43.978,5.353 44.311,6.159 44.311,7.108L44.311,13.426L41.024,13.426ZM24,22.336L33.237,16.991L24,11.685L14.763,16.991L24,22.336Z" style="fill:rgb(68,73,82);fill-rule:nonzero;"/>
         </g>
       </svg>
-      `
+      `;
 
       this.controlButton.type = "button";
 
@@ -369,10 +364,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   async run() {
     try {
       this.close();
-    } catch(e) {}
+    } catch (e) {}
 
     if (this.lock) return;
-    this.lock = true;    
+    this.lock = true;
     this.emit("computeStart");
 
     await this.computeTextures();
@@ -389,7 +384,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     // this.downloadUSDZ()
     this.lock = false;
   }
-
 
   onRemove() {
     this.dispose();
@@ -746,8 +740,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (!this.colorData) throw new Error("Color textures is not ready.");
     if (!this.terrainData) throw new Error("Terrain textures is not ready.");
 
-    
-
     // remove a potentially existing map mesh from a previous run
     this.threeTileContainerGLTF.clear();
     this.threeTileContainerUSDZ.clear();
@@ -764,7 +756,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     if (!ctx) throw new Error("Color texture not available");
 
-
     // Use a base color and darken it to use on the north/south side
     const baseColor = new THREE.Color(this.options.edgeColor);
     // const darkerColor = baseColor.clone().offsetHSL(0, 0, -0.2);
@@ -775,7 +766,11 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const thickness =
       Math.ceil(this.colorData.width / this.terrainData.width) * 1.5;
 
-    await addWatermarkToContext(ctx, thickness * 2, Math.max(256, colorCanvas.width / 10));
+    await addWatermarkToContext(
+      ctx,
+      thickness * 2,
+      Math.max(256, colorCanvas.width / 10)
+    );
 
     // upper band
     ctx.fillRect(0, 0, colorCanvas.width - 1, thickness);
@@ -800,9 +795,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       colorCanvas.width - 1,
       colorCanvas.height - 1
     );
-
-
-    
 
     console.timeEnd("tracing borders");
 
@@ -1050,9 +1042,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (this.options.arButtonClassName) {
       this.arButton.classList.add(this.options.arButtonClassName);
     } else {
-      Object.keys(defaultArButtonStyle).forEach(el => {
+      Object.keys(defaultArButtonStyle).forEach((el) => {
         this.arButton.style[el] = defaultArButtonStyle[el];
-      })
+      });
     }
 
     // Adding content to the AR button
@@ -1071,9 +1063,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (this.options.closeButtonClassName) {
       this.closeButton.classList.add(this.options.closeButtonClassName);
     } else {
-      Object.keys(defaultCloseButtonStyle).forEach(el => {
+      Object.keys(defaultCloseButtonStyle).forEach((el) => {
         this.closeButton.style[el] = defaultCloseButtonStyle[el];
-      })
+      });
     }
 
     // Adding content to the close button
@@ -1082,16 +1074,15 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     } else {
       this.closeButton.appendChild(this.options.closeButtonContent);
     }
-    
+
     this.modelViewer.appendChild(this.closeButton);
 
     // this.modelViewer.activateAR();
 
     this.closeButton.addEventListener("click", async (evt) => {
-      this.close()
+      this.close();
     });
   }
-
 
   close() {
     this.dispose();
@@ -1099,5 +1090,4 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     removeDomNode(this.modelViewer);
     removeDomNode(this.closeButton);
   }
-
 }

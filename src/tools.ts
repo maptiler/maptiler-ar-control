@@ -24,21 +24,26 @@ const logoSvg = `
 </svg>
 `;
 
-
-export function addWatermarkToContext(ctx, distanceToSide: number, width: number = 256): Promise<void> {
-  return new Promise((resolve, reject) => {
+export function addWatermarkToContext(
+  ctx,
+  distanceToSide: number,
+  width = 256
+): Promise<void> {
+  return new Promise((resolve) => {
     const height = width * sizeRatio;
     console.log("width", width);
-    
-    const resizedLogo = logoSvg.replace("<WIDTH>", width.toString()).replace("<HEIGHT>", height.toString())
+
+    const resizedLogo = logoSvg
+      .replace("<WIDTH>", width.toString())
+      .replace("<HEIGHT>", height.toString());
     const img = new Image();
-    const svg = new Blob([resizedLogo], {type: 'image/svg+xml'});
+    const svg = new Blob([resizedLogo], { type: "image/svg+xml" });
     const url = URL.createObjectURL(svg);
-    img.onload = function() {
+    img.onload = function () {
       ctx.drawImage(img, distanceToSide, distanceToSide);
       URL.revokeObjectURL(url);
       resolve();
-    }
+    };
     img.src = url;
-  })
+  });
 }

@@ -18473,7 +18473,7 @@ const logoSvg = `
 </svg>
 `;
 function addWatermarkToContext(ctx, distanceToSide, width = 256) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const height = width * sizeRatio;
     console.log("width", width);
     const resizedLogo = logoSvg.replace("<WIDTH>", width.toString()).replace("<HEIGHT>", height.toString());
@@ -19030,7 +19030,11 @@ class MaptilerARControl extends EventEmitter {
       const evenDarkerColor = baseColor.clone().multiplyScalar(0.5);
       ctx.fillStyle = `#${baseColor.getHexString()}`;
       const thickness = Math.ceil(this.colorData.width / this.terrainData.width) * 1.5;
-      yield addWatermarkToContext(ctx, thickness * 2, Math.max(256, colorCanvas.width / 10));
+      yield addWatermarkToContext(
+        ctx,
+        thickness * 2,
+        Math.max(256, colorCanvas.width / 10)
+      );
       ctx.fillRect(0, 0, colorCanvas.width - 1, thickness);
       ctx.fillRect(
         0,
