@@ -96,3 +96,15 @@ The AR control performs some temporary changes to the map view, so these events 
 
 In the [example](./examples/index.html), we show a fullscreen overlay with a waiting message at `computeStart` and hide it at `computeEnd`, just by dynamically updating the `.style.display` property of the overlay.  
 When using React, you may want to replace this logic by a change of state.
+
+# Options
+The constructor `MaptilerARControl` accepts an option object to customize the look and feel. Here are the attributes:
+- `showButton` (boolean): Shows the AR button if `true`, hide it otherwise. Default: `true`.
+- `background` (string): Background color (css compatible). Default: `"#FFFFFF"` (white).
+- `closeButtonClassName` (string): CSS class to add to the close button on the AR modal. If none is provided, a default inline style is added Default: none.
+- `closeButtonContent` (string | HTMLElement): Content to add to the close button. If the content is a string, it is added as `.innerHTML`. If it's a DOM element, it is added as `.appendChild()`. Default: `"Close"`.
+- `arButtonClassName` (string): CSS class to add to the AR button on the AR modal. If none is provided, a default inline style is added. Default: none
+- `arButtonContent` (string | HTMLElement): Content to add to the AR button. If the content is a string, it is added as `.innerHTML`. If it's a DOM element, it is added as `.appendChild()`. Default: `"Close"`.
+- `edgeColor` (string): Color of the 3D model edges. Default: `"#0eaeff"` (grayish teal)
+
+![](images/screenshot2.png)

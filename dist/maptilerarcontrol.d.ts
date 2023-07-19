@@ -8,13 +8,48 @@ declare type MapTextureData = {
     bounds: LngLatBounds;
 };
 declare function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement;
+/**
+ * Options for the Maptiler AR Control
+ */
 declare type MaptilerARControlOptions = {
+    /**
+     * Shows the AR button if `true`, hide it otherwise.
+     * Default: `true`
+     */
     showButton?: boolean;
+    /**
+     * Background color (css compatible).
+     * Default: `"#FFFFFF"` (white)
+     */
     background?: string;
+    /**
+     * CSS class to add to the close button on the AR modal.
+     * If none is provided, a default inline style is added.
+     * Default: none
+     */
     closeButtonClassName?: string;
+    /**
+     * Content to add to the close button. If the content is a string, it is added as `.innerHTML`
+     * if it's a DOM element, it is added as `.appendChild()`.
+     * Default: `"Close"`
+     */
     closeButtonContent?: string | HTMLElement;
+    /**
+     * CSS class to add to the AR button on the AR modal.
+     * If none is provided, a default inline style is added.
+     * Default: none
+     */
     arButtonClassName?: string;
-    arButtonContent?: string;
+    /**
+     * Content to add to the AR button. If the content is a string, it is added as `.innerHTML`
+     * if it's a DOM element, it is added as `.appendChild()`.
+     * Default: `"Close"`
+     */
+    arButtonContent?: string | HTMLElement;
+    /**
+     * Color of the 3D model edges.
+     * Default: `"#0eaeff"` (grayish teal)
+     */
     edgeColor?: string;
 };
 declare class MaptilerARControl extends EventEmitter implements IControl {
