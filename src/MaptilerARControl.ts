@@ -777,7 +777,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     await idleAsync(this.map);
   }
 
-  init3DScene() {    
+  init3DScene() {
     this.threeSceneGLTF = new THREE.Scene();
     this.threeTileContainerGLTF = new THREE.Object3D();
     this.threeSceneGLTF.add(this.threeTileContainerGLTF);
@@ -856,8 +856,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // @ts-ignore
     mapTexture.colorSpace = THREE.SRGBColorSpace; // for some reason, the TS types do not mention this
-    mapTexture.encoding = THREE.sRGBEncoding;
-    mapTexture.encoding = THREE.LinearEncoding;
+    mapTexture.colorSpace = THREE.sRGBEncoding;
     mapTexture.needsUpdate = true;
     this.itemsToDispose.push(mapTexture);
 

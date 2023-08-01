@@ -16310,20 +16310,20 @@ class TextureUtils extends EventDispatcher {
       generateMipmaps: false,
       type: HalfFloatType,
       format: RGBAFormat,
-      encoding: LinearSRGBColorSpace,
+      colorSpace: LinearSRGBColorSpace,
       depthBuffer: true,
     });
     const cubeCamera = new CubeCamera(0.1, 100, cubeTarget);
     const generatedEnvironmentMap = cubeCamera.renderTarget.texture;
     generatedEnvironmentMap.name = name;
-    const outputEncoding = renderer.outputEncoding;
+    const outputColorSpace = renderer.outputColorSpace;
     const toneMapping = renderer.toneMapping;
     renderer.toneMapping = NoToneMapping;
-    renderer.outputEncoding = LinearSRGBColorSpace;
+    renderer.outputColorSpace = LinearSRGBColorSpace;
     cubeCamera.update(renderer, scene);
     this.blurCubemap(cubeTarget, GENERATED_SIGMA);
     renderer.toneMapping = toneMapping;
-    renderer.outputEncoding = outputEncoding;
+    renderer.outputColorSpace = outputColorSpace;
     return generatedEnvironmentMap;
   }
   /**

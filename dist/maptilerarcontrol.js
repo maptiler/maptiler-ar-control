@@ -51570,20 +51570,20 @@ canvas {
           generateMipmaps: false,
           type: HalfFloatType,
           format: RGBAFormat,
-          encoding: LinearSRGBColorSpace,
+          colorSpace: LinearSRGBColorSpace,
           depthBuffer: true
         });
         const cubeCamera = new CubeCamera(0.1, 100, cubeTarget);
         const generatedEnvironmentMap = cubeCamera.renderTarget.texture;
         generatedEnvironmentMap.name = name;
-        const outputEncoding = renderer.outputEncoding;
+        const outputColorSpace = renderer.outputColorSpace;
         const toneMapping = renderer.toneMapping;
         renderer.toneMapping = NoToneMapping;
-        renderer.outputEncoding = LinearSRGBColorSpace;
+        renderer.outputColorSpace = LinearSRGBColorSpace;
         cubeCamera.update(renderer, scene);
         this.blurCubemap(cubeTarget, GENERATED_SIGMA);
         renderer.toneMapping = toneMapping;
-        renderer.outputEncoding = outputEncoding;
+        renderer.outputColorSpace = outputColorSpace;
         return generatedEnvironmentMap;
       });
     }
@@ -61973,13 +61973,16 @@ ${samplers.join("\n")}
   class USDZExporter {
     parse(_0) {
       return __async$1(this, arguments, function* (scene, options = {}) {
-        options = Object.assign({
-          ar: {
-            anchoring: { type: "plane" },
-            planeAnchoring: { alignment: "horizontal" }
+        options = Object.assign(
+          {
+            ar: {
+              anchoring: { type: "plane" },
+              planeAnchoring: { alignment: "horizontal" }
+            },
+            quickLookCompatible: false
           },
-          quickLookCompatible: false
-        }, options);
+          options
+        );
         const files = {};
         const modelFileName = "model.usda";
         files[modelFileName] = null;
@@ -62002,7 +62005,10 @@ ${samplers.join("\n")}
               }
               output += buildXform(object, geometry, material);
             } else {
-              console.warn("THREE.USDZExporter: Unsupported material type (USDZ only supports MeshStandardMaterial)", object);
+              console.warn(
+                "THREE.USDZExporter: Unsupported material type (USDZ only supports MeshStandardMaterial)",
+                object
+              );
             }
           } else if (object.isCamera) {
             output += buildCamera(object);
@@ -62015,8 +62021,12 @@ ${samplers.join("\n")}
         for (const id in textures) {
           const texture = textures[id];
           const canvas = imageToCanvas(texture.image, texture.flipY);
-          const blob = yield new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1));
-          files[`textures/Texture_${id}.png`] = new Uint8Array(yield blob.arrayBuffer());
+          const blob = yield new Promise(
+            (resolve) => canvas.toBlob(resolve, "image/png", 1)
+          );
+          files[`textures/Texture_${id}.png`] = new Uint8Array(
+            yield blob.arrayBuffer()
+          );
         }
         let offset = 0;
         for (const filename in files) {
@@ -62048,7 +62058,9 @@ ${samplers.join("\n")}
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
       return canvas;
     } else {
-      throw new Error("THREE.USDZExporter: No valid image data found. Unable to process texture.");
+      throw new Error(
+        "THREE.USDZExporter: No valid image data found. Unable to process texture."
+      );
     }
   }
   const PRECISION = 7;
@@ -62102,7 +62114,10 @@ ${samplers.join("\n")}
     const name = "Object_" + object.id;
     const transform = buildMatrix(object.matrixWorld);
     if (object.matrixWorld.determinant() < 0) {
-      console.warn("THREE.USDZExporter: USDZ does not support negative scales", object);
+      console.warn(
+        "THREE.USDZExporter: USDZ does not support negative scales",
+        object
+      );
     }
     return `def Xform "${name}" (
 	prepend references = @./geometries/Geometry_${geometry.id}.usda@</Geometry>
@@ -62119,7 +62134,10 @@ ${samplers.join("\n")}
   }
   function buildMatrix(matrix) {
     const array = matrix.elements;
-    return `( ${buildMatrixRow(array, 0)}, ${buildMatrixRow(array, 4)}, ${buildMatrixRow(array, 8)}, ${buildMatrixRow(array, 12)} )`;
+    return `( ${buildMatrixRow(array, 0)}, ${buildMatrixRow(
+    array,
+    4
+  )}, ${buildMatrixRow(array, 8)}, ${buildMatrixRow(array, 12)} )`;
   }
   function buildMatrixRow(array, offset) {
     return `(${array[offset + 0]}, ${array[offset + 1]}, ${array[offset + 2]}, ${array[offset + 3]})`;
@@ -62180,7 +62198,11 @@ ${buildPrimvars(attributes, count)}
       const x = attribute.getX(i);
       const y = attribute.getY(i);
       const z = attribute.getZ(i);
-      array.push(`(${x.toPrecision(PRECISION)}, ${y.toPrecision(PRECISION)}, ${z.toPrecision(PRECISION)})`);
+      array.push(
+        `(${x.toPrecision(PRECISION)}, ${y.toPrecision(
+        PRECISION
+      )}, ${z.toPrecision(PRECISION)})`
+      );
     }
     return array.join(", ");
   }
@@ -62193,7 +62215,9 @@ ${buildPrimvars(attributes, count)}
     for (let i = 0; i < attribute.count; i++) {
       const x = attribute.getX(i);
       const y = attribute.getY(i);
-      array.push(`(${x.toPrecision(PRECISION)}, ${1 - y.toPrecision(PRECISION)})`);
+      array.push(
+        `(${x.toPrecision(PRECISION)}, ${1 - y.toPrecision(PRECISION)})`
+      );
     }
     return array.join(", ");
   }
@@ -62288,48 +62312,75 @@ ${array.join("")}
 		}`;
     }
     if (material.side === DoubleSide) {
-      console.warn("THREE.USDZExporter: USDZ does not support double sided materials", material);
+      console.warn(
+        "THREE.USDZExporter: USDZ does not support double sided materials",
+        material
+      );
     }
     if (material.map !== null) {
-      inputs.push(`${pad}color3f inputs:diffuseColor.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:rgb>`);
+      inputs.push(
+        `${pad}color3f inputs:diffuseColor.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:rgb>`
+      );
       if (material.transparent) {
-        inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`);
+        inputs.push(
+          `${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`
+        );
       } else if (material.alphaTest > 0) {
-        inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`);
-        inputs.push(`${pad}float inputs:opacityThreshold = ${material.alphaTest}`);
+        inputs.push(
+          `${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`
+        );
+        inputs.push(
+          `${pad}float inputs:opacityThreshold = ${material.alphaTest}`
+        );
       }
       samplers.push(buildTexture(material.map, "diffuse", material.color));
     } else {
-      inputs.push(`${pad}color3f inputs:diffuseColor = ${buildColor(material.color)}`);
+      inputs.push(
+        `${pad}color3f inputs:diffuseColor = ${buildColor(material.color)}`
+      );
     }
     if (material.emissiveMap !== null) {
-      inputs.push(`${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.id}/Texture_${material.emissiveMap.id}_emissive.outputs:rgb>`);
+      inputs.push(
+        `${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.id}/Texture_${material.emissiveMap.id}_emissive.outputs:rgb>`
+      );
       samplers.push(buildTexture(material.emissiveMap, "emissive"));
     } else if (material.emissive.getHex() > 0) {
-      inputs.push(`${pad}color3f inputs:emissiveColor = ${buildColor(material.emissive)}`);
+      inputs.push(
+        `${pad}color3f inputs:emissiveColor = ${buildColor(material.emissive)}`
+      );
     }
     if (material.normalMap !== null) {
-      inputs.push(`${pad}normal3f inputs:normal.connect = </Materials/Material_${material.id}/Texture_${material.normalMap.id}_normal.outputs:rgb>`);
+      inputs.push(
+        `${pad}normal3f inputs:normal.connect = </Materials/Material_${material.id}/Texture_${material.normalMap.id}_normal.outputs:rgb>`
+      );
       samplers.push(buildTexture(material.normalMap, "normal"));
     }
     if (material.aoMap !== null) {
-      inputs.push(`${pad}float inputs:occlusion.connect = </Materials/Material_${material.id}/Texture_${material.aoMap.id}_occlusion.outputs:r>`);
+      inputs.push(
+        `${pad}float inputs:occlusion.connect = </Materials/Material_${material.id}/Texture_${material.aoMap.id}_occlusion.outputs:r>`
+      );
       samplers.push(buildTexture(material.aoMap, "occlusion"));
     }
     if (material.roughnessMap !== null && material.roughness === 1) {
-      inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.id}/Texture_${material.roughnessMap.id}_roughness.outputs:g>`);
+      inputs.push(
+        `${pad}float inputs:roughness.connect = </Materials/Material_${material.id}/Texture_${material.roughnessMap.id}_roughness.outputs:g>`
+      );
       samplers.push(buildTexture(material.roughnessMap, "roughness"));
     } else {
       inputs.push(`${pad}float inputs:roughness = ${material.roughness}`);
     }
     if (material.metalnessMap !== null && material.metalness === 1) {
-      inputs.push(`${pad}float inputs:metallic.connect = </Materials/Material_${material.id}/Texture_${material.metalnessMap.id}_metallic.outputs:b>`);
+      inputs.push(
+        `${pad}float inputs:metallic.connect = </Materials/Material_${material.id}/Texture_${material.metalnessMap.id}_metallic.outputs:b>`
+      );
       samplers.push(buildTexture(material.metalnessMap, "metallic"));
     } else {
       inputs.push(`${pad}float inputs:metallic = ${material.metalness}`);
     }
     if (material.alphaMap !== null) {
-      inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.alphaMap.id}_opacity.outputs:r>`);
+      inputs.push(
+        `${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.alphaMap.id}_opacity.outputs:r>`
+      );
       inputs.push(`${pad}float inputs:opacityThreshold = 0.0001`);
       samplers.push(buildTexture(material.alphaMap, "opacity"));
     } else {
@@ -62337,7 +62388,9 @@ ${array.join("")}
     }
     if (material.isMeshPhysicalMaterial) {
       inputs.push(`${pad}float inputs:clearcoat = ${material.clearcoat}`);
-      inputs.push(`${pad}float inputs:clearcoatRoughness = ${material.clearcoatRoughness}`);
+      inputs.push(
+        `${pad}float inputs:clearcoatRoughness = ${material.clearcoatRoughness}`
+      );
       inputs.push(`${pad}float inputs:ior = ${material.ior}`);
     }
     return `
@@ -62371,7 +62424,10 @@ ${samplers.join("\n")}
     const name = camera.name ? camera.name : "Camera_" + camera.id;
     const transform = buildMatrix(camera.matrixWorld);
     if (camera.matrixWorld.determinant() < 0) {
-      console.warn("THREE.USDZExporter: USDZ does not support negative scales", camera);
+      console.warn(
+        "THREE.USDZExporter: USDZ does not support negative scales",
+        camera
+      );
     }
     if (camera.isOrthographicCamera) {
       return `def Camera "${name}"
@@ -62379,7 +62435,9 @@ ${samplers.join("\n")}
 			matrix4d xformOp:transform = ${transform}
 			uniform token[] xformOpOrder = ["xformOp:transform"]
 
-			float2 clippingRange = (${camera.near.toPrecision(PRECISION)}, ${camera.far.toPrecision(PRECISION)})
+			float2 clippingRange = (${camera.near.toPrecision(
+      PRECISION
+    )}, ${camera.far.toPrecision(PRECISION)})
 			float horizontalAperture = ${((Math.abs(camera.left) + Math.abs(camera.right)) * 10).toPrecision(PRECISION)}
 			float verticalAperture = ${((Math.abs(camera.top) + Math.abs(camera.bottom)) * 10).toPrecision(PRECISION)}
 			token projection = "orthographic"
@@ -62392,7 +62450,9 @@ ${samplers.join("\n")}
 			matrix4d xformOp:transform = ${transform}
 			uniform token[] xformOpOrder = ["xformOp:transform"]
 
-			float2 clippingRange = (${camera.near.toPrecision(PRECISION)}, ${camera.far.toPrecision(PRECISION)})
+			float2 clippingRange = (${camera.near.toPrecision(
+      PRECISION
+    )}, ${camera.far.toPrecision(PRECISION)})
 			float focalLength = ${camera.getFocalLength().toPrecision(PRECISION)}
 			float focusDistance = ${camera.focus.toPrecision(PRECISION)}
 			float horizontalAperture = ${camera.getFilmWidth().toPrecision(PRECISION)}
@@ -63015,8 +63075,7 @@ ${samplers.join("\n")}
         const mapTexture = new CanvasTexture(colorCanvas);
         mapTexture.flipY = false;
         mapTexture.colorSpace = SRGBColorSpace;
-        mapTexture.encoding = sRGBEncoding;
-        mapTexture.encoding = LinearEncoding;
+        mapTexture.colorSpace = sRGBEncoding;
         mapTexture.needsUpdate = true;
         this.itemsToDispose.push(mapTexture);
         this.gltfMaterial = new MeshStandardMaterial({
