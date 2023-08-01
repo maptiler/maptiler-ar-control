@@ -62802,7 +62802,6 @@ ${samplers.join("\n")}
       }
     }
     restoreMapSettings() {
-      this.map.setPixelRatio(this.originalPixelRatio);
       this.map.triggerRepaint();
       if (this.hasTerrain) {
         this.map.setTerrain({
@@ -62817,7 +62816,6 @@ ${samplers.join("\n")}
       if (this.hasTerrain) {
         this.map.setTerrain(null);
       }
-      this.map.setPixelRatio(4);
       this.map.triggerRepaint();
       const topViewCameraSettings = {
         center: this.cameraSettings.center,

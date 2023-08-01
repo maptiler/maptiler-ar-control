@@ -485,7 +485,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   private restoreMapSettings() {
-    this.map.setPixelRatio(this.originalPixelRatio);
+    // this.map.setPixelRatio(this.originalPixelRatio);
     this.map.triggerRepaint();
 
     if (this.hasTerrain) {
@@ -506,7 +506,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.map.setTerrain(null);
     }
 
-    this.map.setPixelRatio(4);
+    // this.map.setPixelRatio(4);
     this.map.triggerRepaint();
 
     const topViewCameraSettings = {
