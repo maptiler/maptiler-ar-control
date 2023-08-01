@@ -17957,16 +17957,13 @@ var __async$1 = (__this, __arguments, generator) => {
 class USDZExporter {
   parse(_0) {
     return __async$1(this, arguments, function* (scene, options = {}) {
-      options = Object.assign(
-        {
-          ar: {
-            anchoring: { type: "plane" },
-            planeAnchoring: { alignment: "horizontal" }
-          },
-          quickLookCompatible: false
+      options = Object.assign({
+        ar: {
+          anchoring: { type: "plane" },
+          planeAnchoring: { alignment: "horizontal" }
         },
-        options
-      );
+        quickLookCompatible: false
+      }, options);
       const files = {};
       const modelFileName = "model.usda";
       files[modelFileName] = null;
@@ -17989,10 +17986,7 @@ class USDZExporter {
             }
             output += buildXform(object, geometry, material);
           } else {
-            console.warn(
-              "THREE.USDZExporter: Unsupported material type (USDZ only supports MeshStandardMaterial)",
-              object
-            );
+            console.warn("THREE.USDZExporter: Unsupported material type (USDZ only supports MeshStandardMaterial)", object);
           }
         } else if (object.isCamera) {
           output += buildCamera(object);
@@ -18005,12 +17999,8 @@ class USDZExporter {
       for (const id in textures) {
         const texture = textures[id];
         const canvas = imageToCanvas(texture.image, texture.flipY);
-        const blob = yield new Promise(
-          (resolve) => canvas.toBlob(resolve, "image/png", 1)
-        );
-        files[`textures/Texture_${id}.png`] = new Uint8Array(
-          yield blob.arrayBuffer()
-        );
+        const blob = yield new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1));
+        files[`textures/Texture_${id}.png`] = new Uint8Array(yield blob.arrayBuffer());
       }
       let offset = 0;
       for (const filename in files) {
@@ -18042,9 +18032,7 @@ function imageToCanvas(image, flipY) {
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
     return canvas;
   } else {
-    throw new Error(
-      "THREE.USDZExporter: No valid image data found. Unable to process texture."
-    );
+    throw new Error("THREE.USDZExporter: No valid image data found. Unable to process texture.");
   }
 }
 const PRECISION = 7;
@@ -18054,6 +18042,7 @@ function buildHeader() {
 	customLayerData = {
 		string creator = "Three.js USDZExporter"
 	}
+	defaultPrim = "Root"
 	metersPerUnit = 1
 	upAxis = "Y"
 )
@@ -18097,10 +18086,7 @@ function buildXform(object, geometry, material) {
   const name = "Object_" + object.id;
   const transform = buildMatrix(object.matrixWorld);
   if (object.matrixWorld.determinant() < 0) {
-    console.warn(
-      "THREE.USDZExporter: USDZ does not support negative scales",
-      object
-    );
+    console.warn("THREE.USDZExporter: USDZ does not support negative scales", object);
   }
   return `def Xform "${name}" (
 	prepend references = @./geometries/Geometry_${geometry.id}.usda@</Geometry>
@@ -18117,10 +18103,7 @@ function buildXform(object, geometry, material) {
 }
 function buildMatrix(matrix) {
   const array = matrix.elements;
-  return `( ${buildMatrixRow(array, 0)}, ${buildMatrixRow(
-    array,
-    4
-  )}, ${buildMatrixRow(array, 8)}, ${buildMatrixRow(array, 12)} )`;
+  return `( ${buildMatrixRow(array, 0)}, ${buildMatrixRow(array, 4)}, ${buildMatrixRow(array, 8)}, ${buildMatrixRow(array, 12)} )`;
 }
 function buildMatrixRow(array, offset) {
   return `(${array[offset + 0]}, ${array[offset + 1]}, ${array[offset + 2]}, ${array[offset + 3]})`;
@@ -18181,11 +18164,7 @@ function buildVector3Array(attribute, count) {
     const x = attribute.getX(i);
     const y = attribute.getY(i);
     const z = attribute.getZ(i);
-    array.push(
-      `(${x.toPrecision(PRECISION)}, ${y.toPrecision(
-        PRECISION
-      )}, ${z.toPrecision(PRECISION)})`
-    );
+    array.push(`(${x.toPrecision(PRECISION)}, ${y.toPrecision(PRECISION)}, ${z.toPrecision(PRECISION)})`);
   }
   return array.join(", ");
 }
@@ -18198,9 +18177,7 @@ function buildVector2Array(attribute, count) {
   for (let i = 0; i < attribute.count; i++) {
     const x = attribute.getX(i);
     const y = attribute.getY(i);
-    array.push(
-      `(${x.toPrecision(PRECISION)}, ${1 - y.toPrecision(PRECISION)})`
-    );
+    array.push(`(${x.toPrecision(PRECISION)}, ${1 - y.toPrecision(PRECISION)})`);
   }
   return array.join(", ");
 }
@@ -18295,75 +18272,48 @@ function buildMaterial(material, textures, quickLookCompatible = false) {
 		}`;
   }
   if (material.side === THREE.DoubleSide) {
-    console.warn(
-      "THREE.USDZExporter: USDZ does not support double sided materials",
-      material
-    );
+    console.warn("THREE.USDZExporter: USDZ does not support double sided materials", material);
   }
   if (material.map !== null) {
-    inputs.push(
-      `${pad}color3f inputs:diffuseColor.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:rgb>`
-    );
+    inputs.push(`${pad}color3f inputs:diffuseColor.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:rgb>`);
     if (material.transparent) {
-      inputs.push(
-        `${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`
-      );
+      inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`);
     } else if (material.alphaTest > 0) {
-      inputs.push(
-        `${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`
-      );
-      inputs.push(
-        `${pad}float inputs:opacityThreshold = ${material.alphaTest}`
-      );
+      inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.map.id}_diffuse.outputs:a>`);
+      inputs.push(`${pad}float inputs:opacityThreshold = ${material.alphaTest}`);
     }
     samplers.push(buildTexture(material.map, "diffuse", material.color));
   } else {
-    inputs.push(
-      `${pad}color3f inputs:diffuseColor = ${buildColor(material.color)}`
-    );
+    inputs.push(`${pad}color3f inputs:diffuseColor = ${buildColor(material.color)}`);
   }
   if (material.emissiveMap !== null) {
-    inputs.push(
-      `${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.id}/Texture_${material.emissiveMap.id}_emissive.outputs:rgb>`
-    );
+    inputs.push(`${pad}color3f inputs:emissiveColor.connect = </Materials/Material_${material.id}/Texture_${material.emissiveMap.id}_emissive.outputs:rgb>`);
     samplers.push(buildTexture(material.emissiveMap, "emissive"));
   } else if (material.emissive.getHex() > 0) {
-    inputs.push(
-      `${pad}color3f inputs:emissiveColor = ${buildColor(material.emissive)}`
-    );
+    inputs.push(`${pad}color3f inputs:emissiveColor = ${buildColor(material.emissive)}`);
   }
   if (material.normalMap !== null) {
-    inputs.push(
-      `${pad}normal3f inputs:normal.connect = </Materials/Material_${material.id}/Texture_${material.normalMap.id}_normal.outputs:rgb>`
-    );
+    inputs.push(`${pad}normal3f inputs:normal.connect = </Materials/Material_${material.id}/Texture_${material.normalMap.id}_normal.outputs:rgb>`);
     samplers.push(buildTexture(material.normalMap, "normal"));
   }
   if (material.aoMap !== null) {
-    inputs.push(
-      `${pad}float inputs:occlusion.connect = </Materials/Material_${material.id}/Texture_${material.aoMap.id}_occlusion.outputs:r>`
-    );
+    inputs.push(`${pad}float inputs:occlusion.connect = </Materials/Material_${material.id}/Texture_${material.aoMap.id}_occlusion.outputs:r>`);
     samplers.push(buildTexture(material.aoMap, "occlusion"));
   }
   if (material.roughnessMap !== null && material.roughness === 1) {
-    inputs.push(
-      `${pad}float inputs:roughness.connect = </Materials/Material_${material.id}/Texture_${material.roughnessMap.id}_roughness.outputs:g>`
-    );
+    inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.id}/Texture_${material.roughnessMap.id}_roughness.outputs:g>`);
     samplers.push(buildTexture(material.roughnessMap, "roughness"));
   } else {
     inputs.push(`${pad}float inputs:roughness = ${material.roughness}`);
   }
   if (material.metalnessMap !== null && material.metalness === 1) {
-    inputs.push(
-      `${pad}float inputs:metallic.connect = </Materials/Material_${material.id}/Texture_${material.metalnessMap.id}_metallic.outputs:b>`
-    );
+    inputs.push(`${pad}float inputs:metallic.connect = </Materials/Material_${material.id}/Texture_${material.metalnessMap.id}_metallic.outputs:b>`);
     samplers.push(buildTexture(material.metalnessMap, "metallic"));
   } else {
     inputs.push(`${pad}float inputs:metallic = ${material.metalness}`);
   }
   if (material.alphaMap !== null) {
-    inputs.push(
-      `${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.alphaMap.id}_opacity.outputs:r>`
-    );
+    inputs.push(`${pad}float inputs:opacity.connect = </Materials/Material_${material.id}/Texture_${material.alphaMap.id}_opacity.outputs:r>`);
     inputs.push(`${pad}float inputs:opacityThreshold = 0.0001`);
     samplers.push(buildTexture(material.alphaMap, "opacity"));
   } else {
@@ -18371,9 +18321,7 @@ function buildMaterial(material, textures, quickLookCompatible = false) {
   }
   if (material.isMeshPhysicalMaterial) {
     inputs.push(`${pad}float inputs:clearcoat = ${material.clearcoat}`);
-    inputs.push(
-      `${pad}float inputs:clearcoatRoughness = ${material.clearcoatRoughness}`
-    );
+    inputs.push(`${pad}float inputs:clearcoatRoughness = ${material.clearcoatRoughness}`);
     inputs.push(`${pad}float inputs:ior = ${material.ior}`);
   }
   return `
@@ -18407,10 +18355,7 @@ function buildCamera(camera) {
   const name = camera.name ? camera.name : "Camera_" + camera.id;
   const transform = buildMatrix(camera.matrixWorld);
   if (camera.matrixWorld.determinant() < 0) {
-    console.warn(
-      "THREE.USDZExporter: USDZ does not support negative scales",
-      camera
-    );
+    console.warn("THREE.USDZExporter: USDZ does not support negative scales", camera);
   }
   if (camera.isOrthographicCamera) {
     return `def Camera "${name}"
@@ -18418,9 +18363,7 @@ function buildCamera(camera) {
 			matrix4d xformOp:transform = ${transform}
 			uniform token[] xformOpOrder = ["xformOp:transform"]
 
-			float2 clippingRange = (${camera.near.toPrecision(
-      PRECISION
-    )}, ${camera.far.toPrecision(PRECISION)})
+			float2 clippingRange = (${camera.near.toPrecision(PRECISION)}, ${camera.far.toPrecision(PRECISION)})
 			float horizontalAperture = ${((Math.abs(camera.left) + Math.abs(camera.right)) * 10).toPrecision(PRECISION)}
 			float verticalAperture = ${((Math.abs(camera.top) + Math.abs(camera.bottom)) * 10).toPrecision(PRECISION)}
 			token projection = "orthographic"
@@ -18433,9 +18376,7 @@ function buildCamera(camera) {
 			matrix4d xformOp:transform = ${transform}
 			uniform token[] xformOpOrder = ["xformOp:transform"]
 
-			float2 clippingRange = (${camera.near.toPrecision(
-      PRECISION
-    )}, ${camera.far.toPrecision(PRECISION)})
+			float2 clippingRange = (${camera.near.toPrecision(PRECISION)}, ${camera.far.toPrecision(PRECISION)})
 			float focalLength = ${camera.getFocalLength().toPrecision(PRECISION)}
 			float focusDistance = ${camera.focus.toPrecision(PRECISION)}
 			float horizontalAperture = ${camera.getFilmWidth().toPrecision(PRECISION)}
@@ -18475,7 +18416,6 @@ const logoSvg = `
 function addWatermarkToContext(ctx, distanceToSide, width = 256) {
   return new Promise((resolve) => {
     const height = width * sizeRatio;
-    console.log("width", width);
     const resizedLogo = logoSvg.replace("<WIDTH>", width.toString()).replace("<HEIGHT>", height.toString());
     const img = new Image();
     const svg = new Blob([resizedLogo], { type: "image/svg+xml" });
@@ -18640,28 +18580,45 @@ const defaultOptionValues = {
   background: "#FFFFFF",
   closeButtonClassName: "",
   arButtonClassName: "",
-  closeButtonContent: `<svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 -960 960 960" width="100%"><path d="M480-418.26 282.203-220.463q-12.87 12.869-30.87 12.869t-30.87-12.869q-12.869-12.87-12.869-30.87t12.869-30.87L418.26-480 220.463-677.797q-12.869-12.87-12.869-30.87t12.869-30.87q12.87-12.869 30.87-12.869t30.87 12.869L480-541.74l197.797-197.797q12.87-12.869 30.87-12.869t30.87 12.869q12.869 12.87 12.869 30.87t-12.869 30.87L541.74-480l197.797 197.797q12.869 12.87 12.869 30.87t-12.869 30.87q-12.87 12.869-30.87 12.869t-30.87-12.869L480-418.26Z" style="fill:rgb(68,73,82);"/></svg>`,
-  arButtonContent: "Enable AR",
+  closeButtonContent: `<svg width="100%" height="100%" viewBox="0 0 33 33" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+      <g transform="matrix(0.707107,0.707107,-0.707107,0.707107,16.6768,6.42373)">
+          <path d="M7,13.75C6.737,13.75 6.509,13.653 6.315,13.46C6.122,13.266 6.025,13.038 6.025,12.775L6.025,8.225L1.475,8.225C1.212,8.225 0.984,8.128 0.79,7.935C0.597,7.741 0.5,7.513 0.5,7.25C0.5,6.987 0.597,6.759 0.79,6.565C0.984,6.372 1.212,6.275 1.475,6.275L6.025,6.275L6.025,1.725C6.025,1.462 6.122,1.234 6.315,1.04C6.509,0.847 6.737,0.75 7,0.75C7.263,0.75 7.491,0.847 7.685,1.04C7.878,1.234 7.975,1.462 7.975,1.725L7.975,6.275L12.525,6.275C12.788,6.275 13.016,6.372 13.21,6.565C13.403,6.759 13.5,6.987 13.5,7.25C13.5,7.513 13.403,7.741 13.21,7.935C13.016,8.128 12.788,8.225 12.525,8.225L7.975,8.225L7.975,12.775C7.975,13.038 7.878,13.266 7.685,13.46C7.491,13.653 7.263,13.75 7,13.75Z" style="fill:rgb(68,73,82);fill-rule:nonzero;"/>
+      </g>
+    </svg>`,
+  arButtonContent: `
+  <span>
+    <svg width="33px" height="33px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2; vertical-align: middle;">
+      <g transform="matrix(0.718295,0,0,0.718295,6.75661,6.76523)">
+          <path d="M22.197,39.734L11.472,33.439C10.949,33.118 10.543,32.696 10.253,32.171C9.963,31.646 9.819,31.082 9.819,30.48L9.819,17.941C9.819,17.34 9.963,16.776 10.253,16.251C10.543,15.726 10.949,15.303 11.472,14.983L22.247,8.576C22.777,8.27 23.362,8.116 24,8.116C24.638,8.116 25.223,8.27 25.753,8.576L36.528,14.983C37.051,15.303 37.457,15.726 37.747,16.251C38.037,16.776 38.182,17.34 38.182,17.941L38.182,30.48C38.182,31.082 38.032,31.646 37.734,32.171C37.436,32.696 37.017,33.118 36.478,33.439L25.603,39.734C25.062,40.048 24.491,40.205 23.892,40.205C23.292,40.205 22.727,40.048 22.197,39.734ZM22.5,35.925L22.5,25.044L13.275,19.741L13.275,30.373L22.5,35.925ZM25.5,35.925L34.775,30.373L34.775,19.741L25.5,25.044L25.5,35.925ZM3.701,13.426L3.701,7.108C3.701,6.159 4.033,5.353 4.696,4.687C5.359,4.022 6.163,3.689 7.108,3.689L13.426,3.689L13.426,6.976L6.976,6.976L6.976,13.426L3.701,13.426ZM13.426,44.299L7.108,44.299C6.163,44.299 5.359,43.967 4.696,43.304C4.033,42.641 3.701,41.837 3.701,40.892L3.701,34.574L6.976,34.574L6.976,41.024L13.426,41.024L13.426,44.299ZM34.574,44.299L34.574,41.024L41.024,41.024L41.024,34.574L44.311,34.574L44.311,40.892C44.311,41.837 43.978,42.641 43.313,43.304C42.647,43.967 41.841,44.299 40.892,44.299L34.574,44.299ZM41.024,13.426L41.024,6.976L34.574,6.976L34.574,3.689L40.892,3.689C41.841,3.689 42.647,4.022 43.313,4.687C43.978,5.353 44.311,6.159 44.311,7.108L44.311,13.426L41.024,13.426ZM24,22.336L33.237,16.991L24,11.685L14.763,16.991L24,22.336Z" style="fill:rgb(36, 189, 240);fill-rule:nonzero;"/>
+      </g>
+    </svg>
+    <span style="vertical-align: middle;">
+    View in your space
+    </span>
+  </span>`,
   edgeColor: "#7b8487"
 };
 const defaultArButtonStyle = {
   position: "absolute",
-  top: "0",
+  bottom: "0",
   left: "0",
-  margin: "35px",
-  fontSize: "1.5em",
+  right: "0",
+  margin: "30px auto",
+  fontSize: "1.4em",
   width: "fit-content",
   background: "#FFF",
-  border: "2px solid #0eaeff",
-  borderRadius: "5px",
-  padding: "8px 10px",
-  color: "#0eaeff"
+  border: "1px solid #0000001a",
+  borderRadius: "3px",
+  padding: "2px 9px 2px 6px",
+  color: "#727781",
+  "box-shadow": "0 0 6px 2px rgb(0 0 0 / 8%)"
 };
 const defaultCloseButtonStyle = {
   position: "absolute",
   top: "0",
   right: "0",
   margin: "10px",
+  padding: "0px",
   background: "#FFF",
   border: "none",
   borderRadius: "3px",
@@ -18784,7 +18741,6 @@ class MaptilerARControl extends EventEmitter {
     if (this.hasTerrain) {
       this.map.setTerrain(null);
     }
-    console.log("setting pixel ratio to 4");
     this.map.setPixelRatio(4);
     this.map.triggerRepaint();
     const topViewCameraSettings = {
@@ -18978,12 +18934,8 @@ class MaptilerARControl extends EventEmitter {
     return __async(this, null, function* () {
       var _a;
       this.enableTopView();
-      console.time("Compute color texture");
       yield this.computeColorData();
-      console.timeEnd("Compute color texture");
-      console.time("Compute terrain texture");
       yield this.computeTerrainData();
-      console.timeEnd("Compute terrain texture");
       if (!this.colorData)
         throw new Error("The color texture is invalid.");
       this.mapCaptureBounds = this.map.getBounds();
@@ -19000,11 +18952,11 @@ class MaptilerARControl extends EventEmitter {
     this.threeSceneGLTF = new THREE.Scene();
     this.threeTileContainerGLTF = new THREE.Object3D();
     this.threeSceneGLTF.add(this.threeTileContainerGLTF);
-    this.threeTileContainerGLTF.rotateX(-Math.PI / 2);
+    this.threeTileContainerGLTF.rotation.set(-Math.PI / 2, 0, 0);
     this.threeSceneUSDZ = new THREE.Scene();
     this.threeTileContainerUSDZ = new THREE.Object3D();
     this.threeSceneUSDZ.add(this.threeTileContainerUSDZ);
-    this.threeTileContainerUSDZ.rotateX(-Math.PI / 2);
+    this.threeTileContainerUSDZ.rotation.set(-Math.PI / 2, 0, 0);
   }
   buildMapModel() {
     return __async(this, null, function* () {
@@ -19015,10 +18967,7 @@ class MaptilerARControl extends EventEmitter {
       this.threeTileContainerGLTF.clear();
       this.threeTileContainerUSDZ.clear();
       this.dispose();
-      console.time("making canvas");
       const colorCanvas = mapTextureDataToCanvas(this.colorData);
-      console.timeEnd("making canvas");
-      console.time("tracing borders");
       const ctx = colorCanvas.getContext("2d");
       if (!ctx)
         throw new Error("Color texture not available");
@@ -19047,7 +18996,6 @@ class MaptilerARControl extends EventEmitter {
         colorCanvas.width - 1,
         colorCanvas.height - 1
       );
-      console.timeEnd("tracing borders");
       const mapTexture = new THREE.CanvasTexture(colorCanvas);
       mapTexture.flipY = false;
       mapTexture.colorSpace = THREE.SRGBColorSpace;
@@ -19076,7 +19024,6 @@ class MaptilerARControl extends EventEmitter {
       this.mapMeshGLTF = new THREE.Mesh(mapGeom, this.gltfMaterial);
       this.mapMeshUSDZ = new THREE.Mesh(mapGeom, this.usdzMaterial);
       const positionBuf = mapGeom.attributes.position.array;
-      console.time("Applying elevation");
       const w = this.terrainData.width;
       const h = this.terrainData.height;
       let minEle = Infinity;
@@ -19089,7 +19036,6 @@ class MaptilerARControl extends EventEmitter {
           minEle = elevation;
         }
       }
-      console.log("minEle", minEle);
       minEle = Math.max(0, ~~(minEle / 100) * 100 - 100);
       for (let i = 0; i < positionBuf.length / 3; i += 1) {
         const r = this.terrainData.pixelData[i * 4];
@@ -19104,7 +19050,6 @@ class MaptilerARControl extends EventEmitter {
         positionBuf[i * 3 + 2] = elevation;
       }
       mapGeom.computeVertexNormals();
-      console.timeEnd("Applying elevation");
       this.itemsToDispose.push(mapGeom);
       const bottomPlaneGeom = new THREE.PlaneGeometry(
         widthMeter,
@@ -19141,6 +19086,8 @@ class MaptilerARControl extends EventEmitter {
     }
   }
   downloadGLTF(binary = false) {
+    this.threeTileContainerGLTF.updateMatrix();
+    this.threeTileContainerGLTF.updateMatrixWorld();
     this.gltfExporter.parse(
       this.threeSceneGLTF,
       (gltfPayload) => {
@@ -19171,6 +19118,8 @@ class MaptilerARControl extends EventEmitter {
   }
   downloadUSDZ() {
     return __async(this, null, function* () {
+      this.threeTileContainerUSDZ.updateMatrix();
+      this.threeTileContainerUSDZ.updateMatrixWorld();
       const blob = yield this.getModelBlobUSDZ();
       const link = document.createElement("a");
       link.style.display = "none";
@@ -19217,10 +19166,8 @@ class MaptilerARControl extends EventEmitter {
       if (!typeof window)
         return;
       const container = this.map.getContainer();
-      console.time("Making GLB model");
       const modelBlobGLB = yield this.getModelBlobGLB();
       const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
-      console.timeEnd("Making GLB model");
       this.emit("computeEnd");
       this.modelViewer = new ModelViewerElement();
       this.modelViewer.src = modelObjectURLGLB;

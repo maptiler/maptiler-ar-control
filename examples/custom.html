@@ -40,7 +40,7 @@
         bottom: 0;
         width: 100vw;
         height: 100vh;
-        background-color: #d1d3e6;
+        background: radial-gradient(circle, rgba(230,240,244,1) 1%, rgba(165,184,190,1) 73%, rgba(98,116,121,1) 100%);
         z-index: 3;
         display: none;
       }
@@ -144,8 +144,9 @@
       // Waiting for the map to be ready
       map.on("load", (e) => {
         const arControl = new maptilerarcontrol.MaptilerARControl({
-          background: "#d1d3e6",
-          edgeColor: "#ff8fea",
+          // background: "#d9e8cc",
+          background: `radial-gradient(circle, rgba(230,240,244,1) 1%, rgba(165,184,190,1) 73%, rgba(98,116,121,1) 100%)`,
+          edgeColor: "#578034",
           arButtonContent: `<img src="box-icon.svg"/>`,
           closeButtonContent: `<img src="close-icon.svg"/>`,
           arButtonClassName: "maptiler-ar-enable-button",

@@ -285,23 +285,40 @@ const defaultOptionValues: MaptilerARControlOptions = {
   background: "#FFFFFF",
   closeButtonClassName: "",
   arButtonClassName: "",
-  closeButtonContent: `<svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 -960 960 960" width="100%"><path d="M480-418.26 282.203-220.463q-12.87 12.869-30.87 12.869t-30.87-12.869q-12.869-12.87-12.869-30.87t12.869-30.87L418.26-480 220.463-677.797q-12.869-12.87-12.869-30.87t12.869-30.87q12.87-12.869 30.87-12.869t30.87 12.869L480-541.74l197.797-197.797q12.87-12.869 30.87-12.869t30.87 12.869q12.869 12.87 12.869 30.87t-12.869 30.87L541.74-480l197.797 197.797q12.869 12.87 12.869 30.87t-12.869 30.87q-12.87 12.869-30.87 12.869t-30.87-12.869L480-418.26Z" style="fill:rgb(68,73,82);"/></svg>`,
-  arButtonContent: "Enable AR",
+  // closeButtonContent: `<svg xmlns="http://www.w3.org/2000/svg" height="100%" viewBox="0 -960 960 960" width="100%"><path d="M480-418.26 282.203-220.463q-12.87 12.869-30.87 12.869t-30.87-12.869q-12.869-12.87-12.869-30.87t12.869-30.87L418.26-480 220.463-677.797q-12.869-12.87-12.869-30.87t12.869-30.87q12.87-12.869 30.87-12.869t30.87 12.869L480-541.74l197.797-197.797q12.87-12.869 30.87-12.869t30.87 12.869q12.869 12.87 12.869 30.87t-12.869 30.87L541.74-480l197.797 197.797q12.869 12.87 12.869 30.87t-12.869 30.87q-12.87 12.869-30.87 12.869t-30.87-12.869L480-418.26Z" style="fill:rgb(68,73,82);"/></svg>`,
+  closeButtonContent: `<svg width="100%" height="100%" viewBox="0 0 33 33" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+      <g transform="matrix(0.707107,0.707107,-0.707107,0.707107,16.6768,6.42373)">
+          <path d="M7,13.75C6.737,13.75 6.509,13.653 6.315,13.46C6.122,13.266 6.025,13.038 6.025,12.775L6.025,8.225L1.475,8.225C1.212,8.225 0.984,8.128 0.79,7.935C0.597,7.741 0.5,7.513 0.5,7.25C0.5,6.987 0.597,6.759 0.79,6.565C0.984,6.372 1.212,6.275 1.475,6.275L6.025,6.275L6.025,1.725C6.025,1.462 6.122,1.234 6.315,1.04C6.509,0.847 6.737,0.75 7,0.75C7.263,0.75 7.491,0.847 7.685,1.04C7.878,1.234 7.975,1.462 7.975,1.725L7.975,6.275L12.525,6.275C12.788,6.275 13.016,6.372 13.21,6.565C13.403,6.759 13.5,6.987 13.5,7.25C13.5,7.513 13.403,7.741 13.21,7.935C13.016,8.128 12.788,8.225 12.525,8.225L7.975,8.225L7.975,12.775C7.975,13.038 7.878,13.266 7.685,13.46C7.491,13.653 7.263,13.75 7,13.75Z" style="fill:rgb(68,73,82);fill-rule:nonzero;"/>
+      </g>
+    </svg>`,
+  arButtonContent: `
+  <span>
+    <svg width="33px" height="33px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2; vertical-align: middle;">
+      <g transform="matrix(0.718295,0,0,0.718295,6.75661,6.76523)">
+          <path d="M22.197,39.734L11.472,33.439C10.949,33.118 10.543,32.696 10.253,32.171C9.963,31.646 9.819,31.082 9.819,30.48L9.819,17.941C9.819,17.34 9.963,16.776 10.253,16.251C10.543,15.726 10.949,15.303 11.472,14.983L22.247,8.576C22.777,8.27 23.362,8.116 24,8.116C24.638,8.116 25.223,8.27 25.753,8.576L36.528,14.983C37.051,15.303 37.457,15.726 37.747,16.251C38.037,16.776 38.182,17.34 38.182,17.941L38.182,30.48C38.182,31.082 38.032,31.646 37.734,32.171C37.436,32.696 37.017,33.118 36.478,33.439L25.603,39.734C25.062,40.048 24.491,40.205 23.892,40.205C23.292,40.205 22.727,40.048 22.197,39.734ZM22.5,35.925L22.5,25.044L13.275,19.741L13.275,30.373L22.5,35.925ZM25.5,35.925L34.775,30.373L34.775,19.741L25.5,25.044L25.5,35.925ZM3.701,13.426L3.701,7.108C3.701,6.159 4.033,5.353 4.696,4.687C5.359,4.022 6.163,3.689 7.108,3.689L13.426,3.689L13.426,6.976L6.976,6.976L6.976,13.426L3.701,13.426ZM13.426,44.299L7.108,44.299C6.163,44.299 5.359,43.967 4.696,43.304C4.033,42.641 3.701,41.837 3.701,40.892L3.701,34.574L6.976,34.574L6.976,41.024L13.426,41.024L13.426,44.299ZM34.574,44.299L34.574,41.024L41.024,41.024L41.024,34.574L44.311,34.574L44.311,40.892C44.311,41.837 43.978,42.641 43.313,43.304C42.647,43.967 41.841,44.299 40.892,44.299L34.574,44.299ZM41.024,13.426L41.024,6.976L34.574,6.976L34.574,3.689L40.892,3.689C41.841,3.689 42.647,4.022 43.313,4.687C43.978,5.353 44.311,6.159 44.311,7.108L44.311,13.426L41.024,13.426ZM24,22.336L33.237,16.991L24,11.685L14.763,16.991L24,22.336Z" style="fill:rgb(36, 189, 240);fill-rule:nonzero;"/>
+      </g>
+    </svg>
+    <span style="vertical-align: middle;">
+    View in your space
+    </span>
+  </span>`,
   edgeColor: "#7b8487",
 };
 
 const defaultArButtonStyle = {
   position: "absolute",
-  top: "0",
+  bottom: "0",
   left: "0",
-  margin: "35px",
-  fontSize: "1.5em",
+  right: "0",
+  margin: "30px auto",
+  fontSize: "1.4em",
   width: "fit-content",
   background: "#FFF",
-  border: "2px solid #0eaeff",
-  borderRadius: "5px",
-  padding: "8px 10px",
-  color: "#0eaeff",
+  border: "1px solid #0000001a",
+  borderRadius: "3px",
+  padding: "2px 9px 2px 6px",
+  color: "#727781",
+  "box-shadow": "0 0 6px 2px rgb(0 0 0 / 8%)",
 };
 
 const defaultCloseButtonStyle = {
@@ -309,6 +326,7 @@ const defaultCloseButtonStyle = {
   top: "0",
   right: "0",
   margin: "10px",
+  padding: "0px",
   background: "#FFF",
   border: "none",
   borderRadius: "3px",
@@ -487,8 +505,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       // @ts-ignore
       this.map.setTerrain(null);
     }
-
-    console.log("setting pixel ratio to 4");
 
     this.map.setPixelRatio(4);
     this.map.triggerRepaint();
@@ -730,17 +746,17 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     // Set the view from top and axis-aligned
     this.enableTopView();
 
-    console.time("Compute color texture");
+    // console.time("Compute color texture");
     await this.computeColorData();
-    console.timeEnd("Compute color texture");
+    // console.timeEnd("Compute color texture");
 
     // console.time("Compute water texture")
     // await this.computeLandMaskData();
     // console.timeEnd("Compute water texture")
 
-    console.time("Compute terrain texture");
+    // console.time("Compute terrain texture");
     await this.computeTerrainData();
-    console.timeEnd("Compute terrain texture");
+    // console.timeEnd("Compute terrain texture");
 
     // if (!this.terrainData) return;
 
@@ -761,17 +777,16 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     await idleAsync(this.map);
   }
 
-  init3DScene() {
+  init3DScene() {    
     this.threeSceneGLTF = new THREE.Scene();
-
     this.threeTileContainerGLTF = new THREE.Object3D();
     this.threeSceneGLTF.add(this.threeTileContainerGLTF);
-    this.threeTileContainerGLTF.rotateX(-Math.PI / 2);
+    this.threeTileContainerGLTF.rotation.set(-Math.PI / 2, 0, 0);
 
     this.threeSceneUSDZ = new THREE.Scene();
     this.threeTileContainerUSDZ = new THREE.Object3D();
     this.threeSceneUSDZ.add(this.threeTileContainerUSDZ);
-    this.threeTileContainerUSDZ.rotateX(-Math.PI / 2);
+    this.threeTileContainerUSDZ.rotation.set(-Math.PI / 2, 0, 0);
   }
 
   private async buildMapModel() {
@@ -785,11 +800,11 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     // Delete all GPU buffers from a previous run
     this.dispose();
 
-    console.time("making canvas");
+    // console.time("making canvas");
     const colorCanvas = mapTextureDataToCanvas(this.colorData);
-    console.timeEnd("making canvas");
+    // console.timeEnd("making canvas");
 
-    console.time("tracing borders");
+    // console.time("tracing borders");
     const ctx = colorCanvas.getContext("2d");
 
     if (!ctx) throw new Error("Color texture not available");
@@ -834,7 +849,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       colorCanvas.height - 1
     );
 
-    console.timeEnd("tracing borders");
+    // console.timeEnd("tracing borders");
 
     const mapTexture = new THREE.CanvasTexture(colorCanvas);
     mapTexture.flipY = false;
@@ -886,7 +901,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     // const elevation = terrain8BitData.pixelData;
     const positionBuf = mapGeom.attributes.position.array;
 
-    console.time("Applying elevation");
+    // console.time("Applying elevation");
     const w = this.terrainData.width;
     const h = this.terrainData.height;
 
@@ -901,8 +916,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
         minEle = elevation;
       }
     }
-
-    console.log("minEle", minEle);
 
     // Flooring the minimum elevation to the lower hundred meter
     minEle = Math.max(0, ~~(minEle / 100) * 100 - 100);
@@ -931,7 +944,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     mapGeom.computeVertexNormals();
 
-    console.timeEnd("Applying elevation");
+    // console.timeEnd("Applying elevation");
 
     this.itemsToDispose.push(mapGeom);
 
@@ -978,6 +991,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   private downloadGLTF(binary = false) {
+    this.threeTileContainerGLTF.updateMatrix();
+    this.threeTileContainerGLTF.updateMatrixWorld();
     this.gltfExporter.parse(
       this.threeSceneGLTF,
 
@@ -1016,6 +1031,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   private async downloadUSDZ() {
+    this.threeTileContainerUSDZ.updateMatrix();
+    this.threeTileContainerUSDZ.updateMatrixWorld();
     const blob = await this.getModelBlobUSDZ();
 
     const link = document.createElement("a");
@@ -1069,10 +1086,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     const container = this.map.getContainer();
 
-    console.time("Making GLB model");
+    // console.time("Making GLB model");
     const modelBlobGLB = await this.getModelBlobGLB();
     const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
-    console.timeEnd("Making GLB model");
+    // console.timeEnd("Making GLB model");
     this.emit("computeEnd");
 
     this.modelViewer = new ModelViewerElement();

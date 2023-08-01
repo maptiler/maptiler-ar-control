@@ -31,7 +31,6 @@ export function addWatermarkToContext(
 ): Promise<void> {
   return new Promise((resolve) => {
     const height = width * sizeRatio;
-    console.log("width", width);
 
     const resizedLogo = logoSvg
       .replace("<WIDTH>", width.toString())
