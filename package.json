@@ -11,7 +11,8 @@
   "author": "Jonathan Lurie",
   "exports": {
     ".": {
-      "import": "./dist/maptilerarcontrol.mjs"
+      "import": "./dist/maptilerarcontrol.mjs",
+      "types": "./dist/maptilerarcontrol.d.ts"
     }
   },
   "scripts": {
