@@ -23,7 +23,7 @@
     "lint": "eslint --fix \"src/**/*.{js,ts}\"",
     "prepare": "npm run format; npm run lint; npm run build"
   },
-  "license": "MIT",
+  "license": "Copyright MapTiler",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-json": "^5.0.1",

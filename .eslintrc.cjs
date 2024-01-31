@@ -3,4 +3,10 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   root: true,
+  
+  rules: {
+    // "@typescript-eslint/ban-ts-comment": "off",
+    // "no-empty": "off",
+    // "no-constant-condition": "off"
+  }
 };
