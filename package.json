@@ -1,11 +1,11 @@
 {
   "name": "@maptiler/ar-control",
   "version": "1.0.0",
-  "description": "Boilerplate for a core Typescript library",
+  "description": "AR Control for MapTiler SDK",
   "homepage": "https://github.com/maptiler/maptiler-ar-control",
   "repository": {
     "type": "git",
-    "url": "https://github.com/maptiler/maptiler-ar-control.git"
+    "url": "git+https://github.com/maptiler/maptiler-ar-control.git"
   },
   "types": "dist/maptilerarcontrol.d.ts",
   "author": "Jonathan Lurie",
