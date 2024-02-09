@@ -2,52 +2,61 @@
   "name": "@maptiler/ar-control",
   "version": "1.0.0",
   "description": "AR Control for MapTiler SDK",
-  "homepage": "https://github.com/maptiler/maptiler-ar-control",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/maptiler-ar-control.mjs",
+      "types": "./dist/maptiler-ar-control.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com/maptiler"
+  },
+  "author": "MapTiler",
+  "keywords": [
+    "maptiler",
+    "plugin",
+    "AR",
+    "3D",
+    "VR"
+  ],
+  "scripts": {
+    "format": "prettier -c \"src/**/*.{js,ts,tsx}\"",
+    "lint": "eslint \"src/**/*.{js,ts}\"",
+    "format:fix": "prettier --write \"src/**/*.{js,ts,tsx}\"",
+    "lint:fix": "eslint --fix \"src/**/*.{js,ts}\"",
+    "make": "npm run format:fix && npm run lint:fix && npm run build",
+    "dev": "vite -c vite.config-es.ts",
+    "build": "npm run build-es; npm run build-umd",
+    "build-dev": "NODE_ENV=development npm run build-es; NODE_ENV=development npm run build-umd",
+    "build-umd": "tsc && vite build -c vite.config-umd.ts",
+    "build-es": "tsc && vite build -c vite.config-es.ts",
+    "build-umd-dev-watch": "tsc && NODE_ENV=development vite build -w -c vite.config-umd.ts"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/maptiler/maptiler-ar-control.git"
   },
-  "types": "dist/maptilerarcontrol.d.ts",
-  "author": "Jonathan Lurie",
-  "exports": {
-    ".": {
-      "import": "./dist/maptilerarcontrol.mjs",
-      "types": "./dist/maptilerarcontrol.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "rm -rf dist/*; NODE_ENV=production rollup -c",
-    "dev": "rm -rf dist/*; NODE_ENV=development rollup -c -w",
-    "devserve": "rm -rf dist/*; NODE_ENV=development rollup -c -w & serve && fg",
-    "format": "prettier --write \"src/**/*.{js,ts,tsx}\"",
-    "lint": "eslint --fix \"src/**/*.{js,ts}\"",
-    "prepare": "npm run format; npm run lint; npm run build"
-  },
-  "license": "Copyright MapTiler",
+  "license": "",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^22.0.2",
-    "@rollup/plugin-json": "^5.0.1",
-    "@rollup/plugin-node-resolve": "^14.1.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.1",
-    "@typescript-eslint/parser": "^5.42.1",
-    "eslint": "^8.27.0",
-    "prettier": "^2.7.1",
-    "rollup": "^2.79.0",
-    "rollup-plugin-dts": "^4.2.2",
-    "rollup-plugin-esbuild": "^4.10.1",
-    "rollup-plugin-node-globals": "^1.4.0",
-    "rollup-plugin-polyfill-node": "^0.12.0",
-    "rollup-plugin-string": "^3.0.0",
-    "rollup-plugin-swc": "^0.2.1",
-    "serve": "^14.1.1",
-    "typedoc": "^0.23.20",
-    "typescript": "^4.8.3"
-  },
-  "peerDependencies": {
-    "@maptiler/sdk": "^1.0.12"
+    "@types/node": "^20.4.5",
+    "@types/three": "^0.155.0",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "eslint": "^8.44.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-import": "^2.28.0",
+    "prettier": "^2.8.8",
+    "typescript": "^5.0.4",
+    "vite": "^4.4.8",
+    "vite-plugin-dts": "^3.4.0"
   },
   "dependencies": {
+    "@google/model-viewer": "^3.4.0",
+    "@maptiler/sdk": "^1.2.1",
+    "@types/events": "^3.0.0",
     "events": "^3.3.0",
-    "three": "^0.152.1"
+    "three": "^0.160.1"
   }
 }

@@ -1,17 +1,8 @@
 src/
 docs
-images
 tests
 vite*
 *.tgz
 .github
 .eslintrc.cjs 
 demos
-dist/*.map
-dist/maptilerarcontrol.js
-dist/maptilerarcontrol.mjs
-dist/maptilerarcontrol.min.js
-examples
-CHANGELOG.md
-rollup.config.js
-typedoc.json

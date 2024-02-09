@@ -49,7 +49,7 @@ This must be done in  hook that is only executed client side (or inside `compone
 <link href="https://cdn.maptiler.com/maptiler-sdk-js/latest/maptiler-sdk.css" rel="stylesheet" />
 
 <!-- Import the AR Control -->
-<script src="https://cdn.maptiler.com/maptiler-ar-control/latest/maptilerarcontrol.min.js"></script>
+<script src="https://cdn.maptiler.com/maptiler-ar-control/latest/maptiler-ar-control.umd.js"></script>
 ```
 
 # Setup

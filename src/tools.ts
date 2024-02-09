@@ -25,7 +25,7 @@ const logoSvg = `
 `;
 
 export function addWatermarkToContext(
-  ctx,
+  ctx: CanvasRenderingContext2D,
   distanceToSide: number,
   width = 256
 ): Promise<void> {
