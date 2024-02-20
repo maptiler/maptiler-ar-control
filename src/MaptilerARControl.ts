@@ -233,6 +233,28 @@ export type MaptilerARControlOptions = {
    * Default: `"#0eaeff"` (grayish teal)
    */
   edgeColor?: string;
+
+  /**
+   * The URL to a logo image to be placed on top of the 3D view (in browser).
+   * The image is located by default on the bottom-left corner but this can be changed with
+   * the option `.logoClass`.
+   * Default: `""` (empty string, no image)
+   */
+  logo?: string;
+
+  /**
+   * Height in pixel of the logo.
+   * Default: `60`
+   */
+  logoHeight?: number;
+
+  /**
+   * CSS class to add to the logo image specified with the `.logo` option.
+   * If a CSS class is provided, the option `.logoHeight` will be ignored and the class is expected to
+   * include instruction about `width` and/or `height`.
+   * Default: `""` (empty string, no class spacified)
+   */
+  logoClass?: string;
 };
 
 const defaultOptionValues: MaptilerARControlOptions = {
@@ -327,6 +349,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private arButton: HTMLElement = null;
   private closeButton: HTMLElement = null;
   private modelViewer: ModelViewerElement = null;
+  private logoImgElement: HTMLImageElement = null;
 
   constructor(options: MaptilerARControlOptions = {}) {
     super();
@@ -409,19 +432,19 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.map = m;
   }
 
-  getMeterPerPixelCenter(): number {
+  private getMeterPerPixelCenter(): number {
     return this.meterPerPixelCenter;
   }
 
-  getColorData(): MapTextureData | null {
+  private getColorData(): MapTextureData | null {
     return this.colorData;
   }
 
-  getLandMaskData(): MapTextureData | null {
+  private getLandMaskData(): MapTextureData | null {
     return this.landMaskData;
   }
 
-  getTerrainData(): MapTextureData | null {
+  private getTerrainData(): MapTextureData | null {
     return this.terrainData;
   }
 
@@ -510,7 +533,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   /**
    * Compute the color data (pixels values + metadata) for the vieport map
    */
-  async computeColorData() {
+  private async computeColorData() {
     this.emit("startComputeColorData");
     // Wait for the map to be fully loaded on the top view
     await idleAsync(this.map);
@@ -699,7 +722,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.emit("endComputeTerrainData", {});
   }
 
-  async computeTextures() {
+  private async computeTextures() {
     // Set the view from top and axis-aligned
     this.enableTopView();
 
@@ -734,7 +757,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     await idleAsync(this.map);
   }
 
-  init3DScene() {
+  private init3DScene() {
     this.threeSceneGLTF = new THREE.Scene();
     this.threeTileContainerGLTF = new THREE.Object3D();
     this.threeSceneGLTF.add(this.threeTileContainerGLTF);
@@ -946,7 +969,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
   }
 
-  private downloadGLTF(binary = false) {
+  downloadGLTF(binary = false) {
     this.threeTileContainerGLTF.updateMatrix();
     this.threeTileContainerGLTF.updateMatrixWorld();
     this.gltfExporter.parse(
@@ -986,7 +1009,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     );
   }
 
-  private async downloadUSDZ() {
+  async downloadUSDZ() {
     this.threeTileContainerUSDZ.updateMatrix();
     this.threeTileContainerUSDZ.updateMatrixWorld();
     const blob = await this.getModelBlobUSDZ();
@@ -1111,6 +1134,29 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.closeButton.addEventListener("click", async (evt) => {
       this.close();
     });
+
+    // Adding a logo image
+    if (this.options.logo) {
+      this.logoImgElement = document.createElement("img");
+      this.logoImgElement.src = this.options.logo;
+
+      if (this.options.logoClass) {
+        this.logoImgElement.classList.add(this.options.logoClass);
+      } else {
+        this.logoImgElement.style.setProperty("position", "absolute");
+        this.logoImgElement.style.setProperty(
+          "height",
+          `${this.options.logoHeight ?? 60}px`
+        );
+        this.logoImgElement.style.setProperty("width", "auto");
+        this.logoImgElement.style.setProperty("bottom", "0");
+        this.logoImgElement.style.setProperty("left", "0");
+        this.logoImgElement.style.setProperty("bottom", "0");
+        this.logoImgElement.style.setProperty("margin", "10px");
+      }
+
+      this.modelViewer.appendChild(this.logoImgElement);
+    }
   }
 
   close() {
@@ -1118,5 +1164,14 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     removeDomNode(this.arButton);
     removeDomNode(this.modelViewer);
     removeDomNode(this.closeButton);
+  }
+
+  /**
+   * Update the `src` property of the logo image
+   */
+  updateLogo(src: string) {
+    if (this.logoImgElement) {
+      this.logoImgElement.src = src;
+    }
   }
 }

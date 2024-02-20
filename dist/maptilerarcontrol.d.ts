@@ -51,6 +51,25 @@ export type MaptilerARControlOptions = {
      * Default: `"#0eaeff"` (grayish teal)
      */
     edgeColor?: string;
+    /**
+     * The URL to a logo image to be placed on top of the 3D view (in browser).
+     * The image is located by default on the bottom-left corner but this can be changed with
+     * the option `.logoClass`.
+     * Default: `""` (empty string, no image)
+     */
+    logo?: string;
+    /**
+     * Height in pixel of the logo.
+     * Default: `60`
+     */
+    logoHeight?: number;
+    /**
+     * CSS class to add to the logo image specified with the `.logo` option.
+     * If a CSS class is provided, the option `.logoHeight` will be ignored and the class is expected to
+     * include instruction about `width` and/or `height`.
+     * Default: `""` (empty string, no class spacified)
+     */
+    logoClass?: string;
 };
 export declare class MaptilerARControl extends EventEmitter implements IControl {
     private controlButton;
@@ -81,15 +100,16 @@ export declare class MaptilerARControl extends EventEmitter implements IControl 
     private arButton;
     private closeButton;
     private modelViewer;
+    private logoImgElement;
     constructor(options?: MaptilerARControlOptions);
     onAdd(map: maplibregl.Map): HTMLElement;
     run(): Promise<void>;
     onRemove(): void;
     setMap(m: Map): void;
-    getMeterPerPixelCenter(): number;
-    getColorData(): MapTextureData | null;
-    getLandMaskData(): MapTextureData | null;
-    getTerrainData(): MapTextureData | null;
+    private getMeterPerPixelCenter;
+    private getColorData;
+    private getLandMaskData;
+    private getTerrainData;
     private saveMapSettings;
     private restoreMapSettings;
     private enableTopView;
@@ -97,22 +117,26 @@ export declare class MaptilerARControl extends EventEmitter implements IControl 
     /**
      * Compute the color data (pixels values + metadata) for the vieport map
      */
-    computeColorData(): Promise<void>;
+    private computeColorData;
     /**
      * Compute the color data (pixels values + metadata) for the vieport map
      */
     private computeLandMaskData;
     private computeTerrainData_VIEWPORT;
     private computeTerrainData;
-    computeTextures(): Promise<void>;
-    init3DScene(): void;
+    private computeTextures;
+    private init3DScene;
     private buildMapModel;
     private dispose;
-    private downloadGLTF;
-    private downloadUSDZ;
+    downloadGLTF(binary?: boolean): void;
+    downloadUSDZ(): Promise<void>;
     private getModelBlobGLB;
     private getModelBlobUSDZ;
     private displayModal;
     close(): void;
+    /**
+     * Update the `src` property of the logo image
+     */
+    updateLogo(src: string): void;
 }
 export {};

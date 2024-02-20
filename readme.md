@@ -106,8 +106,17 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 - `arButtonClassName` (string): CSS class to add to the AR button on the AR modal. If none is provided, a default inline style is added. Default: none
 - `arButtonContent` (string | HTMLElement): Content to add to the AR button. If the content is a string, it is added as `.innerHTML`. If it's a DOM element, it is added as `.appendChild()`. Default: `"Close"`.
 - `edgeColor` (string): Color of the 3D model edges. Default: `"#0eaeff"` (grayish teal)
+- `logo` (string): a URL to a logo placed at the bottom of the 3D view when AR mode is not enabled. By default, the logo will have an height of 60 pixel and be placed at the bottom left corner with a margin of 10 pixels.
+- `logoHeight`(number): the height of the logo in pixels (if any). Default: `60`
+- `logoClass` (string): CSS class to add to the class list of the `<img>` element holding the logo (if any). If used, the `.logoHeight` as well as the default styling will no longer be applied.
 
 ![](images/screenshot2.jpg)
+
+# Methods
+
+- `.run()`: programmatically run the computation of the 3D model. This can be used in replacement of a click on the control
+- `.close()`: programmatically closes the overlay containing the 3D model
+- `.updateLogo(src: string)`: updates the `src` of the logo. This can only be used if the `.logo` option was set in the constructor. Can be coupled with the `computeStart` event to refresh the information, for isntance a dynamically generated QR code that would contain info about the place being processed.
 
 # License
 MapTiler AR Control
