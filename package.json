@@ -9,10 +9,6 @@
       "types": "./dist/maptiler-ar-control.d.ts"
     }
   },
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com/maptiler"
-  },
   "author": "MapTiler",
   "keywords": [
     "maptiler",
@@ -56,6 +52,7 @@
     "@google/model-viewer": "^3.4.0",
     "@maptiler/sdk": "^1.2.1",
     "@types/events": "^3.0.0",
+    "@typescript-eslint/typescript-estree": "^7.0.2",
     "events": "^3.3.0",
     "three": "^0.160.1"
   }
