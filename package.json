@@ -9,10 +9,6 @@
       "types": "./dist/maptiler-ar-control.d.ts"
     }
   },
-  "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com/maptiler"
-  },
   "author": "MapTiler",
   "keywords": [
     "maptiler",

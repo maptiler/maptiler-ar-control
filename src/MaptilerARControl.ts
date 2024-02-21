@@ -28,7 +28,7 @@ type TileIndex2D = {
   y: number;
 };
 
-function removeDomNode(node: any) {
+function removeDomNode(node: HTMLElement) {
   node.parentNode.removeChild(node);
 }
 
@@ -130,7 +130,7 @@ function injectToContext(
   context: CanvasRenderingContext2D,
   topLeftPosition: [number, number]
 ): Promise<void> {
-  return new Promise((resolve, _) => {
+  return new Promise((resolve) => {
     const image = new Image();
     image.crossOrigin = "anonymous";
     image.src = imageUrl;
@@ -177,7 +177,7 @@ function cropCanvas(
  * @returns
  */
 function idleAsync(map: Map) {
-  return new Promise<boolean>(function (myResolve, myReject) {
+  return new Promise<boolean>(function (myResolve) {
     map.once("idle", () => {
       myResolve(true);
     });
@@ -363,7 +363,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
       this.controlButton.type = "button";
 
-      this.controlButton.addEventListener("click", async (evt) => {
+      this.controlButton.addEventListener("click", async () => {
         this.run();
       });
     }
@@ -675,11 +675,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       Math.ceil(
         TERRAIN_TILE_SIZE * (tileIndexBottomRight.y - tileIndexTopLeft.y)
       ),
-    ];
-
-    const nbTile = [
-      tileIndexBottomRight.x - tileIndexTopLeft.x,
-      tileIndexBottomRight.y - tileIndexTopLeft.y,
     ];
 
     const croppedCanvas = cropCanvas(offset, size, terrainCanvas);
@@ -1108,7 +1103,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // this.modelViewer.activateAR();
 
-    this.closeButton.addEventListener("click", async (evt) => {
+    this.closeButton.addEventListener("click", async () => {
       this.close();
     });
   }
