@@ -101,6 +101,7 @@ export declare class MaptilerARControl extends EventEmitter implements IControl 
     private closeButton;
     private modelViewer;
     private logoImgElement;
+    private logo;
     constructor(options?: MaptilerARControlOptions);
     onAdd(map: maplibregl.Map): HTMLElement;
     run(): Promise<void>;

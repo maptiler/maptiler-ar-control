@@ -280,6 +280,7 @@ const defaultOptionValues: MaptilerARControlOptions = {
     </span>
   </span>`,
   edgeColor: "#7b8487",
+  logo: "",
 };
 
 const defaultArButtonStyle = {
@@ -350,6 +351,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private closeButton: HTMLElement = null;
   private modelViewer: ModelViewerElement = null;
   private logoImgElement: HTMLImageElement = null;
+  private logo: string;
 
   constructor(options: MaptilerARControlOptions = {}) {
     super();
@@ -358,6 +360,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       ...defaultOptionValues,
       ...options,
     };
+
+    this.logo = options.logo;
   }
 
   onAdd(map: maplibregl.Map): HTMLElement {
@@ -720,20 +724,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private async computeTextures() {
     // Set the view from top and axis-aligned
     this.enableTopView();
-
-    // console.time("Compute color texture");
     await this.computeColorData();
-    // console.timeEnd("Compute color texture");
-
-    // console.time("Compute water texture")
-    // await this.computeLandMaskData();
-    // console.timeEnd("Compute water texture")
-
-    // console.time("Compute terrain texture");
     await this.computeTerrainData();
-    // console.timeEnd("Compute terrain texture");
-
-    // if (!this.terrainData) return;
 
     if (!this.colorData) throw new Error("The color texture is invalid.");
 
@@ -774,12 +766,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // Delete all GPU buffers from a previous run
     this.dispose();
-
-    // console.time("making canvas");
     const colorCanvas = mapTextureDataToCanvas(this.colorData);
-    // console.timeEnd("making canvas");
-
-    // console.time("tracing borders");
     const ctx = colorCanvas.getContext("2d");
 
     if (!ctx) throw new Error("Color texture not available");
@@ -823,8 +810,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       colorCanvas.width - 1,
       colorCanvas.height - 1
     );
-
-    // console.timeEnd("tracing borders");
 
     const mapTexture = new THREE.CanvasTexture(colorCanvas);
     mapTexture.flipY = false;
@@ -874,8 +859,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // const elevation = terrain8BitData.pixelData;
     const positionBuf = mapGeom.attributes.position.array;
-
-    // console.time("Applying elevation");
     const w = this.terrainData.width;
     const h = this.terrainData.height;
 
@@ -917,9 +900,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
 
     mapGeom.computeVertexNormals();
-
-    // console.timeEnd("Applying elevation");
-
     this.itemsToDispose.push(mapGeom);
 
     const bottomPlaneGeom = new THREE.PlaneGeometry(
@@ -1059,16 +1039,12 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (!typeof window) return;
 
     const container = this.map.getContainer();
-
-    // console.time("Making GLB model");
     const modelBlobGLB = await this.getModelBlobGLB();
     const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
-    // console.timeEnd("Making GLB model");
     this.emit("computeEnd");
 
     this.modelViewer = new ModelViewerElement();
     this.modelViewer.src = modelObjectURLGLB;
-
     this.modelViewer.setAttribute("ar", "true");
     this.modelViewer.setAttribute("tone-mapping", "commerce");
     this.modelViewer.setAttribute("ar-modes", "webxr quick-look");
@@ -1131,9 +1107,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     });
 
     // Adding a logo image
-    if (this.options.logo) {
+    if (this.logo) {
       this.logoImgElement = document.createElement("img");
-      this.logoImgElement.src = this.options.logo;
+      this.logoImgElement.src = this.logo;
 
       if (this.options.logoClass) {
         this.logoImgElement.classList.add(this.options.logoClass);
@@ -1159,6 +1135,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     removeDomNode(this.arButton);
     removeDomNode(this.modelViewer);
     removeDomNode(this.closeButton);
+    removeDomNode(this.logoImgElement);
   }
 
   /**
@@ -1166,6 +1143,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
    */
   updateLogo(src: string) {
     if (this.logoImgElement) {
+      this.logo = src;
       this.logoImgElement.src = src;
     }
   }
