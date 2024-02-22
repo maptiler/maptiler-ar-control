@@ -1,17 +1,17 @@
-import { IControl, Map, LngLatBounds } from '@maptiler/sdk';
-import EventEmitter from 'events';
-
-declare type MapTextureData = {
+/// <reference types="node" />
+import { Map, LngLatBounds, IControl } from "@maptiler/sdk";
+import EventEmitter from "events";
+type MapTextureData = {
     width: number;
     height: number;
     pixelData: Uint8Array;
     bounds: LngLatBounds;
 };
-declare function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement;
+export declare function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement;
 /**
  * Options for the Maptiler AR Control
  */
-declare type MaptilerARControlOptions = {
+export type MaptilerARControlOptions = {
     /**
      * Shows the AR button if `true`, hide it otherwise.
      * Default: `true`
@@ -52,7 +52,7 @@ declare type MaptilerARControlOptions = {
      */
     edgeColor?: string;
 };
-declare class MaptilerARControl extends EventEmitter implements IControl {
+export declare class MaptilerARControl extends EventEmitter implements IControl {
     private controlButton;
     private controlButtonContainer;
     private map;
@@ -115,5 +115,4 @@ declare class MaptilerARControl extends EventEmitter implements IControl {
     private displayModal;
     close(): void;
 }
-
-export { MaptilerARControl, MaptilerARControlOptions, mapTextureDataToCanvas };
+export {};

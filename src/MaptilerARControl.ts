@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
-import { ModelViewerElement } from "./model-viewer";
+import { ModelViewerElement } from "@google/model-viewer";
 
 import EventEmitter from "events";
 import * as THREE from "three";
@@ -28,57 +28,12 @@ type TileIndex2D = {
   y: number;
 };
 
-// Small iOS detector borrowed from ModelViewer
-const IS_IOS =
-  (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(self as any).MSStream) ||
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+function removeDomNode(node: HTMLElement) {
+  node.parentNode.removeChild(node);
+}
 
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
-
-function loadImgAsync(path: string): Promise<Image> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = function () {
-      resolve(img);
-    };
-
-    img.onerror = function (e) {
-      reject(e);
-    };
-    img.src = path;
-  });
-}
-
-async function loadTexture(filepath: string): Promise<THREE.Texture> {
-  return new Promise((resolve, reject) => {
-    const loader = new THREE.TextureLoader();
-
-    // load a resource
-    loader.load(
-      // resource URL
-      filepath,
-
-      // onLoad callback
-      function (texture) {
-        resolve(texture);
-      },
-
-      // onProgress callback currently not supported
-      undefined,
-
-      // onError callback
-      function (err) {
-        reject(err);
-      }
-    );
-  });
-}
-
-function removeDomNode(node: any) {
-  node.parentNode.removeChild(node);
-}
 
 function latLon2Tile(
   zoom: number,
@@ -175,7 +130,7 @@ function injectToContext(
   context: CanvasRenderingContext2D,
   topLeftPosition: [number, number]
 ): Promise<void> {
-  return new Promise((resolve, _) => {
+  return new Promise((resolve) => {
     const image = new Image();
     image.crossOrigin = "anonymous";
     image.src = imageUrl;
@@ -222,7 +177,7 @@ function cropCanvas(
  * @returns
  */
 function idleAsync(map: Map) {
-  return new Promise<boolean>(function (myResolve, myReject) {
+  return new Promise<boolean>(function (myResolve) {
     map.once("idle", () => {
       myResolve(true);
     });
@@ -408,7 +363,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
       this.controlButton.type = "button";
 
-      this.controlButton.addEventListener("click", async (evt) => {
+      this.controlButton.addEventListener("click", async () => {
         this.run();
       });
     }
@@ -420,7 +375,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   async run() {
     try {
       this.close();
-    } catch (e) {}
+    } catch (e) {
+      // empty block
+    }
 
     if (this.lock) return;
     this.lock = true;
@@ -718,11 +675,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       Math.ceil(
         TERRAIN_TILE_SIZE * (tileIndexBottomRight.y - tileIndexTopLeft.y)
       ),
-    ];
-
-    const nbTile = [
-      tileIndexBottomRight.x - tileIndexTopLeft.x,
-      tileIndexBottomRight.y - tileIndexTopLeft.y,
     ];
 
     const croppedCanvas = cropCanvas(offset, size, terrainCanvas);
@@ -1095,6 +1047,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.modelViewer.src = modelObjectURLGLB;
 
     this.modelViewer.setAttribute("ar", "true");
+    this.modelViewer.setAttribute("tone-mapping", "commerce");
     this.modelViewer.setAttribute("ar-modes", "webxr quick-look");
     this.modelViewer.setAttribute("camera-controls", "true");
     this.modelViewer.setAttribute("shadow-intensity", "1");
@@ -1150,7 +1103,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // this.modelViewer.activateAR();
 
-    this.closeButton.addEventListener("click", async (evt) => {
+    this.closeButton.addEventListener("click", async () => {
       this.close();
     });
   }
