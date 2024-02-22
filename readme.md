@@ -109,6 +109,7 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 - `logo` (string): a URL to a logo placed at the bottom of the 3D view when AR mode is not enabled. By default, the logo will have an height of 60 pixel and be placed at the bottom left corner with a margin of 10 pixels.
 - `logoHeight`(number): the height of the logo in pixels (if any). Default: `60`
 - `logoClass` (string): CSS class to add to the class list of the `<img>` element holding the logo (if any). If used, the `.logoHeight` as well as the default styling will no longer be applied.
+- `activateAR` (boolean): When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready. Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to. Default: `false`
 
 ![](images/screenshot2.jpg)
 

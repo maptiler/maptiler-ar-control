@@ -70,6 +70,12 @@ export type MaptilerARControlOptions = {
      * Default: `""` (empty string, no class spacified)
      */
     logoClass?: string;
+    /**
+     * When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready.
+     * Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to.
+     * Default: `false`
+     */
+    activateAR?: boolean;
 };
 export declare class MaptilerARControl extends EventEmitter implements IControl {
     private controlButton;

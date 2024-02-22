@@ -255,6 +255,13 @@ export type MaptilerARControlOptions = {
    * Default: `""` (empty string, no class spacified)
    */
   logoClass?: string;
+
+  /**
+   * When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready.
+   * Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to.
+   * Default: `false`
+   */
+  activateAR?: boolean;
 };
 
 const defaultOptionValues: MaptilerARControlOptions = {
@@ -281,6 +288,7 @@ const defaultOptionValues: MaptilerARControlOptions = {
   </span>`,
   edgeColor: "#7b8487",
   logo: "",
+  activateAR: false,
 };
 
 const defaultArButtonStyle = {
@@ -1055,6 +1063,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.modelViewer.style.zIndex = "3";
     this.modelViewer.style.position = "absolute";
     this.modelViewer.style.background = this.options.background;
+
     container.appendChild(this.modelViewer);
 
     this.arButton = document.createElement("button");
@@ -1127,6 +1136,17 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       }
 
       this.modelViewer.appendChild(this.logoImgElement);
+    }
+
+    // Automatically run the AR
+    if (this.options.activateAR) {
+      // This must be encapsulated in a setTimeout, probably so that the DOM is ready
+      setTimeout(async () => {
+        if (this.modelViewer.canActivateAR) {
+          // clearInterval(autoARInterID);
+          await this.modelViewer.activateAR();
+        }
+      }, 0);
     }
   }
 
