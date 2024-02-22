@@ -255,7 +255,6 @@ export type MaptilerARControlOptions = {
    * Default: `""` (empty string, no class spacified)
    */
   logoClass?: string;
-
   /**
    * When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready.
    * Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to.
@@ -1137,7 +1136,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
       this.modelViewer.appendChild(this.logoImgElement);
     }
-
+    
     // Automatically run the AR
     if (this.options.activateAR) {
       // This must be encapsulated in a setTimeout, probably so that the DOM is ready
