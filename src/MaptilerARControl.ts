@@ -233,6 +233,28 @@ export type MaptilerARControlOptions = {
    * Default: `"#0eaeff"` (grayish teal)
    */
   edgeColor?: string;
+
+  /**
+   * The URL to a logo image to be placed on top of the 3D view (in browser).
+   * The image is located by default on the bottom-left corner but this can be changed with
+   * the option `.logoClass`.
+   * Default: `""` (empty string, no image)
+   */
+  logo?: string;
+
+  /**
+   * Height in pixel of the logo.
+   * Default: `60`
+   */
+  logoHeight?: number;
+
+  /**
+   * CSS class to add to the logo image specified with the `.logo` option.
+   * If a CSS class is provided, the option `.logoHeight` will be ignored and the class is expected to
+   * include instruction about `width` and/or `height`.
+   * Default: `""` (empty string, no class spacified)
+   */
+  logoClass?: string;
 };
 
 const defaultOptionValues: MaptilerARControlOptions = {
@@ -258,6 +280,7 @@ const defaultOptionValues: MaptilerARControlOptions = {
     </span>
   </span>`,
   edgeColor: "#7b8487",
+  logo: "",
 };
 
 const defaultArButtonStyle = {
@@ -327,6 +350,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private arButton: HTMLElement = null;
   private closeButton: HTMLElement = null;
   private modelViewer: ModelViewerElement = null;
+  private logoImgElement: HTMLImageElement = null;
+  private logo: string;
 
   constructor(options: MaptilerARControlOptions = {}) {
     super();
@@ -335,6 +360,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       ...defaultOptionValues,
       ...options,
     };
+
+    this.logo = options.logo;
   }
 
   onAdd(map: maplibregl.Map): HTMLElement {
@@ -409,19 +436,19 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.map = m;
   }
 
-  getMeterPerPixelCenter(): number {
+  private getMeterPerPixelCenter(): number {
     return this.meterPerPixelCenter;
   }
 
-  getColorData(): MapTextureData | null {
+  private getColorData(): MapTextureData | null {
     return this.colorData;
   }
 
-  getLandMaskData(): MapTextureData | null {
+  private getLandMaskData(): MapTextureData | null {
     return this.landMaskData;
   }
 
-  getTerrainData(): MapTextureData | null {
+  private getTerrainData(): MapTextureData | null {
     return this.terrainData;
   }
 
@@ -510,7 +537,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   /**
    * Compute the color data (pixels values + metadata) for the vieport map
    */
-  async computeColorData() {
+  private async computeColorData() {
     this.emit("startComputeColorData");
     // Wait for the map to be fully loaded on the top view
     await idleAsync(this.map);
@@ -694,23 +721,11 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.emit("endComputeTerrainData", {});
   }
 
-  async computeTextures() {
+  private async computeTextures() {
     // Set the view from top and axis-aligned
     this.enableTopView();
-
-    // console.time("Compute color texture");
     await this.computeColorData();
-    // console.timeEnd("Compute color texture");
-
-    // console.time("Compute water texture")
-    // await this.computeLandMaskData();
-    // console.timeEnd("Compute water texture")
-
-    // console.time("Compute terrain texture");
     await this.computeTerrainData();
-    // console.timeEnd("Compute terrain texture");
-
-    // if (!this.terrainData) return;
 
     if (!this.colorData) throw new Error("The color texture is invalid.");
 
@@ -729,7 +744,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     await idleAsync(this.map);
   }
 
-  init3DScene() {
+  private init3DScene() {
     this.threeSceneGLTF = new THREE.Scene();
     this.threeTileContainerGLTF = new THREE.Object3D();
     this.threeSceneGLTF.add(this.threeTileContainerGLTF);
@@ -751,12 +766,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // Delete all GPU buffers from a previous run
     this.dispose();
-
-    // console.time("making canvas");
     const colorCanvas = mapTextureDataToCanvas(this.colorData);
-    // console.timeEnd("making canvas");
-
-    // console.time("tracing borders");
     const ctx = colorCanvas.getContext("2d");
 
     if (!ctx) throw new Error("Color texture not available");
@@ -800,8 +810,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       colorCanvas.width - 1,
       colorCanvas.height - 1
     );
-
-    // console.timeEnd("tracing borders");
 
     const mapTexture = new THREE.CanvasTexture(colorCanvas);
     mapTexture.flipY = false;
@@ -851,8 +859,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // const elevation = terrain8BitData.pixelData;
     const positionBuf = mapGeom.attributes.position.array;
-
-    // console.time("Applying elevation");
     const w = this.terrainData.width;
     const h = this.terrainData.height;
 
@@ -894,9 +900,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
 
     mapGeom.computeVertexNormals();
-
-    // console.timeEnd("Applying elevation");
-
     this.itemsToDispose.push(mapGeom);
 
     const bottomPlaneGeom = new THREE.PlaneGeometry(
@@ -941,7 +944,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
   }
 
-  private downloadGLTF(binary = false) {
+  downloadGLTF(binary = false) {
     this.threeTileContainerGLTF.updateMatrix();
     this.threeTileContainerGLTF.updateMatrixWorld();
     this.gltfExporter.parse(
@@ -981,7 +984,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     );
   }
 
-  private async downloadUSDZ() {
+  async downloadUSDZ() {
     this.threeTileContainerUSDZ.updateMatrix();
     this.threeTileContainerUSDZ.updateMatrixWorld();
     const blob = await this.getModelBlobUSDZ();
@@ -1036,16 +1039,12 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (!typeof window) return;
 
     const container = this.map.getContainer();
-
-    // console.time("Making GLB model");
     const modelBlobGLB = await this.getModelBlobGLB();
     const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
-    // console.timeEnd("Making GLB model");
     this.emit("computeEnd");
 
     this.modelViewer = new ModelViewerElement();
     this.modelViewer.src = modelObjectURLGLB;
-
     this.modelViewer.setAttribute("ar", "true");
     this.modelViewer.setAttribute("tone-mapping", "commerce");
     this.modelViewer.setAttribute("ar-modes", "webxr quick-look");
@@ -1106,6 +1105,29 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.closeButton.addEventListener("click", async () => {
       this.close();
     });
+
+    // Adding a logo image
+    if (this.logo) {
+      this.logoImgElement = document.createElement("img");
+      this.logoImgElement.src = this.logo;
+
+      if (this.options.logoClass) {
+        this.logoImgElement.classList.add(this.options.logoClass);
+      } else {
+        this.logoImgElement.style.setProperty("position", "absolute");
+        this.logoImgElement.style.setProperty(
+          "height",
+          `${this.options.logoHeight ?? 60}px`
+        );
+        this.logoImgElement.style.setProperty("width", "auto");
+        this.logoImgElement.style.setProperty("bottom", "0");
+        this.logoImgElement.style.setProperty("left", "0");
+        this.logoImgElement.style.setProperty("bottom", "0");
+        this.logoImgElement.style.setProperty("margin", "10px");
+      }
+
+      this.modelViewer.appendChild(this.logoImgElement);
+    }
   }
 
   close() {
@@ -1113,5 +1135,16 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     removeDomNode(this.arButton);
     removeDomNode(this.modelViewer);
     removeDomNode(this.closeButton);
+    removeDomNode(this.logoImgElement);
+  }
+
+  /**
+   * Update the `src` property of the logo image
+   */
+  updateLogo(src: string) {
+    if (this.logoImgElement) {
+      this.logo = src;
+      this.logoImgElement.src = src;
+    }
   }
 }
