@@ -1139,13 +1139,12 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // Automatically run the AR
     if (this.options.activateAR) {
-      // This must be encapsulated in a setTimeout, probably so that the DOM is ready
-      setTimeout(async () => {
+      // Wait for Model Viewer to be ready
+      this.modelViewer.addEventListener("load", () => {
         if (this.modelViewer.canActivateAR) {
-          // clearInterval(autoARInterID);
-          await this.modelViewer.activateAR();
+          this.modelViewer.activateAR();
         }
-      }, 0);
+      });
     }
   }
 
