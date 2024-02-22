@@ -1136,7 +1136,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
       this.modelViewer.appendChild(this.logoImgElement);
     }
-    
+
     // Automatically run the AR
     if (this.options.activateAR) {
       // This must be encapsulated in a setTimeout, probably so that the DOM is ready
