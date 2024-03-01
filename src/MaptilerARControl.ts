@@ -1138,14 +1138,32 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
 
     // Automatically run the AR
+    let successfullyEnabledAR = false;
     if (this.options.activateAR) {
       // Wait for Model Viewer to be ready
-      this.modelViewer.addEventListener("load", () => {
+      this.modelViewer.addEventListener("load", async () => {
         if (this.modelViewer.canActivateAR) {
-          this.modelViewer.activateAR();
+          try {
+            await this.modelViewer.activateAR();
+            successfullyEnabledAR = true;
+          } catch (e) {
+            console.warn("AR to be automatatically activated but failed.");
+          }
         }
       });
     }
+
+    this.modelViewer.addEventListener(
+      "camera-change",
+      (e: CustomEvent<CameraChangeDetails>) => {
+        // If AR was successfully enabled, then such event is fired when coming back to
+        // Mode Viewer 3D view, and auto activate AR also mean going back straight to SDK view
+        // without showing MV in between
+        if (successfullyEnabledAR && e.detail.source === "automatic") {
+          this.close();
+        }
+      }
+    );
   }
 
   close() {
@@ -1153,7 +1171,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     removeDomNode(this.arButton);
     removeDomNode(this.modelViewer);
     removeDomNode(this.closeButton);
-    removeDomNode(this.logoImgElement);
+
+    if (this.logoImgElement) {
+      removeDomNode(this.logoImgElement);
+    }
   }
 
   /**
