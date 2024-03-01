@@ -46,3 +46,19 @@ export function addWatermarkToContext(
     img.src = url;
   });
 }
+
+
+export function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        resolve("");
+      }
+        
+    }
+    reader.readAsDataURL(blob);
+  });
+}

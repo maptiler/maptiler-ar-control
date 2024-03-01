@@ -50,10 +50,15 @@
     "vite-plugin-dts": "^3.4.0"
   },
   "dependencies": {
+    "@capacitor-community/file-opener": "^1.0.5",
+    "@capacitor/core": "^5.7.0",
+    "@capacitor/filesystem": "^5.2.1",
     "@google/model-viewer": "^3.4.0",
     "@maptiler/sdk": "^1.2.1",
     "@types/events": "^3.0.0",
     "@typescript-eslint/typescript-estree": "^7.0.2",
+    "capacitor-blob-writer": "^1.1.14",
+    "capacitor-plugin-filedownload": "^2.0.0",
     "events": "^3.3.0",
     "three": "^0.160.1"
   }
