@@ -31,6 +31,9 @@ export default defineConfig({
         "events",
         "@maptiler/sdk",
         "@google/model-viewer",
+        "@capacitor/filesystem",
+        "@capacitor-community/file-opener",
+        "@capacitor/core",
       ],
       output: {
         // Provide global variables to use in the UMD build

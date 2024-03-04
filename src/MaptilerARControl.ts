@@ -2,12 +2,11 @@
 
 import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
 import { ModelViewerElement } from "@google/model-viewer";
-// import { FileDownload } from "capacitor-plugin-filedownload";
-// import write_blob from "capacitor-blob-writer";
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import {Capacitor} from "@capacitor/core";
+
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Capacitor } from "@capacitor/core";
 import { FileOpener }  from "@capacitor-community/file-opener";
-// import PreviewAnyFile from "@capacitor-mobi/cordova-plugin-preview-any-file";
+
 import EventEmitter from "events";
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
@@ -267,11 +266,6 @@ export type MaptilerARControlOptions = {
    * Default: `false`
    */
   activateAR?: boolean;
-
-  /**
-   * If running as part of en encapsulation into a native app with Capacitor, this must be set to `true`
-   */
-  native?: boolean,
 };
 
 const defaultOptionValues: MaptilerARControlOptions = {
@@ -299,7 +293,6 @@ const defaultOptionValues: MaptilerARControlOptions = {
   edgeColor: "#7b8487",
   logo: "",
   activateAR: false,
-  native: false,
 };
 
 const defaultArButtonStyle = {
@@ -438,17 +431,14 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     await this.buildMapModel();
 
-    console.log("this.options.native", this.options.native);
+    console.log(">>> Capacitor.getPlatform()", Capacitor.getPlatform());
     
-
-    if (this.options.native) {
+    if (Capacitor.getPlatform() === 'ios') {
       this.runNative();
     } else {
-      this.displayModal();
+      this.runMobile();
     }
 
-    // this.emit("computeEnd");
-    // this.downloadUSDZ()
     this.lock = false;
   }
 
@@ -1063,57 +1053,19 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   private async runNative() {
-    // await this.downloadUSDZ();
-
     this.threeTileContainerUSDZ.updateMatrix();
     this.threeTileContainerUSDZ.updateMatrixWorld();
     const blob = await this.getModelBlobUSDZ();
-    // const url = URL.createObjectURL(blob);
-
     const b64 = await blobToBase64(blob);
 
-  
-    // const download = async () => {
-    //   FileDownload.download({
-    //     url,
-    //     fileName: "maptiler.usdz",
-    //   }).then((res) => {
-    //     console.log(res.path);
-    //   }).catch(err => {
-    //     console.log(err);
-    //   })
-    // }
-
-
-
-    // const info = await write_blob({
-    //   directory: Directory.Data,
-    //   path: "some_mesh.usdz",
-    //   blob,
-    //   on_fallback: (err) => {
-    //     console.log("ERR", err);
-    //   }
-    // })
-
-    // console.log("info", info);
-    
-
-    // console.log("DONE, ", Directory.Data, "some_mesh.usdz");
-
-    
-    
-
-
-
+    // Write the file in cache
     const info = await Filesystem.writeFile({
       path: "some_mesh.usdz",
       directory: Directory.Cache,
       data: b64,
     });
 
-    
-    
-
+    // Open the file wirtten in cache
     await FileOpener.open({
       filePath: info.uri,
       contentType: "model/vnd.usdz+zip",
@@ -1123,7 +1075,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.emit("computeEnd");
   }
 
-  private async displayModal() {
+
+  private async runMobile() {
     if (!typeof window) return;
 
     const container = this.map.getContainer();

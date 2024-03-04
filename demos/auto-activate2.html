@@ -31,7 +31,7 @@
         width: 100vw;
         height: 100vh;
         background-color: #3e4c55;
-        z-index: 3;
+        z-index: 4;
         display: none;
       }
 
@@ -136,9 +136,7 @@
             logo: generateQRCode(generateQRCode()),
             logoClass: "qr-code",
             logoHeight: 120,
-          }
-
-        qrCodeOptions.native = true;  
+          }  
         qrCodeOptions.activateAR = true;
 
         const arControl = new maptilerarcontrol.MaptilerARControl(qrCodeOptions);
