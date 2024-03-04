@@ -94,7 +94,7 @@ There are two events:
 
 The AR control performs some temporary changes to the map view, so these events are handy to hide those transformations behind a curtain or displaying a message.
 
-In the [example](./examples/index.html), we show a fullscreen overlay with a waiting message at `computeStart` and hide it at `computeEnd`, just by dynamically updating the `.style.display` property of the overlay.  
+In the [example](./examples/index.html), we show a fullscreen overlay with a waiting message at `computeStart` and hides it at `computeEnd`, just by dynamically updating the `.style.display` property of the overlay. Keep in mind that the `z-index` CSS property of this overlay must be higher than the 3D model view, so greater than `3`.    
 When using React, you may want to replace this logic by a change of state.
 
 # Options

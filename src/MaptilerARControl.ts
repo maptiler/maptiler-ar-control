@@ -426,9 +426,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     await this.buildMapModel();
 
-    this.displayModal();
-    // this.emit("computeEnd");
-    // this.downloadUSDZ()
+    await this.displayModal();
+
     this.lock = false;
   }
 
@@ -1048,7 +1047,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const container = this.map.getContainer();
     const modelBlobGLB = await this.getModelBlobGLB();
     const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
-    this.emit("computeEnd");
 
     this.modelViewer = new ModelViewerElement();
     this.modelViewer.src = modelObjectURLGLB;
@@ -1146,11 +1144,19 @@ export class MaptilerARControl extends EventEmitter implements IControl {
           try {
             await this.modelViewer.activateAR();
             successfullyEnabledAR = true;
+            // Waiting a sec before fireing event because Quicklook takes some time to start
+            setTimeout(() => this.emit("computeEnd"), 1000);
           } catch (e) {
-            console.warn("AR to be automatatically activated but failed.");
+            console.warn("AR to be automatically activated but failed.");
+            this.emit("computeEnd");
           }
+        } else {
+          console.warn("AR cannot be automatically activated.");
+          this.emit("computeEnd");
         }
       });
+    } else {
+      this.emit("computeEnd");
     }
 
     this.modelViewer.addEventListener(
