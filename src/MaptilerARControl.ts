@@ -262,6 +262,12 @@ export type MaptilerARControlOptions = {
    * Default: `false`
    */
   activateAR?: boolean;
+
+  /**
+   * Generate a mesh with a higher resolution texture.
+   * Default: `false`
+   */
+  highRes?: false;
 };
 
 const defaultOptionValues: MaptilerARControlOptions = {
@@ -289,6 +295,7 @@ const defaultOptionValues: MaptilerARControlOptions = {
   edgeColor: "#7b8487",
   logo: "",
   activateAR: false,
+  highRes: false,
 };
 
 const defaultArButtonStyle = {
@@ -729,6 +736,12 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   private async computeTextures() {
+    const originalPixelRatio = this.map.getPixelRatio();
+
+    if (this.options.highRes) {
+      this.map.setPixelRatio(4);
+    }
+
     // Set the view from top and axis-aligned
     this.enableTopView();
     await this.computeColorData();
@@ -743,6 +756,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const middleEast = new LngLat(this.mapCaptureBounds.getEast(), center.lat);
     const distance = middleEast.distanceTo(middleWest);
     this.meterPerPixelCenter = distance / this.colorData?.width;
+
+    if (this.options.highRes) {
+      this.map.setPixelRatio(originalPixelRatio);
+    }
 
     // Set the camera back to normal
     this.restoreMapSettings();
@@ -1107,8 +1124,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
 
     this.modelViewer.appendChild(this.closeButton);
-
-    // this.modelViewer.activateAR();
 
     this.closeButton.addEventListener("click", async () => {
       this.close();
