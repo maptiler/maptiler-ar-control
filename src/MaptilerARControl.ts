@@ -34,6 +34,7 @@ function removeDomNode(node: HTMLElement) {
 
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
+const MAX_ZOOM = 16;
 
 function latLon2Tile(
   zoom: number,
@@ -501,7 +502,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     const topViewCameraSettings = {
       center: this.cameraSettings.center,
-      zoom: this.cameraSettings.zoom,
+      zoom: Math.min(this.cameraSettings.zoom, MAX_ZOOM),
       pitch: 0,
       bearing: 0,
     };
@@ -880,8 +881,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       }
     }
 
-    // Flooring the minimum elevation to the lower hundred meter
-    minEle = Math.max(0, ~~(minEle / 100) * 100 - 100);
+    const almostMaxZoom = MAX_ZOOM - 1;
+    const z = Math.min(this.map.getZoom(), almostMaxZoom);
+    minEle = minEle - (50 * (z - almostMaxZoom) ** 2 + 30);
 
     for (let i = 0; i < positionBuf.length / 3; i += 1) {
       const r = this.terrainData.pixelData[i * 4];
@@ -979,7 +981,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
       // error
       (err) => {
-        console.log("error:", err);
+        console.warn("error:", err);
       },
 
       // options
