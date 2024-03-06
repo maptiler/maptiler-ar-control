@@ -3,7 +3,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
   root: true,
-  ignorePatterns: ["**/*.js"],
+  ignorePatterns: ["**/*.js", "src/platform-constants.ts"],
 
   overrides: [
     {

@@ -110,6 +110,7 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 - `logoHeight`(number): the height of the logo in pixels (if any). Default: `60`
 - `logoClass` (string): CSS class to add to the class list of the `<img>` element holding the logo (if any). If used, the `.logoHeight` as well as the default styling will no longer be applied.
 - `activateAR` (boolean): When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready. Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to. Default: `false`
+- `highRes` (boolean): increases the resolution of the texture. Will most likely have no effect on iOS due to some format limitation. Default: `false`.
 
 ![](images/screenshot2.jpg)
 
