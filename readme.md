@@ -94,7 +94,7 @@ There are two events:
 
 The AR control performs some temporary changes to the map view, so these events are handy to hide those transformations behind a curtain or displaying a message.
 
-In the [example](./examples/index.html), we show a fullscreen overlay with a waiting message at `computeStart` and hide it at `computeEnd`, just by dynamically updating the `.style.display` property of the overlay.  
+In the [example](./examples/index.html), we show a fullscreen overlay with a waiting message at `computeStart` and hides it at `computeEnd`, just by dynamically updating the `.style.display` property of the overlay. Keep in mind that the `z-index` CSS property of this overlay must be higher than the 3D model view, so greater than `3`.    
 When using React, you may want to replace this logic by a change of state.
 
 # Options
@@ -110,6 +110,7 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 - `logoHeight`(number): the height of the logo in pixels (if any). Default: `60`
 - `logoClass` (string): CSS class to add to the class list of the `<img>` element holding the logo (if any). If used, the `.logoHeight` as well as the default styling will no longer be applied.
 - `activateAR` (boolean): When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready. Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to. Default: `false`
+- `highRes` (boolean): increases the resolution of the texture. Will most likely have no effect on iOS due to some format limitation. Default: `false`.
 
 ![](images/screenshot2.jpg)
 
