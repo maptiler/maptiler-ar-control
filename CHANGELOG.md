@@ -1,5 +1,14 @@
 # MapTiler AR Control Changelog
 
+## v1.3.0
+### Bug Fixes
+- Package.json optimisation for greater compatibility
+- updated ThreeJS and Model-Viewer dep
+- Remode legacy Threejs constant
+- encapsulated the event calls `.on`, `.once` and `.off`
+- fixes in the readme
+
+
 ## v1.2.0
 ### New Features
 - Possibility to add a marketting image on top of the 3D view

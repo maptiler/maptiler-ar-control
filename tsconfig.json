@@ -6,7 +6,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
+    "skipLibCheck": false,
 
     /* Bundler mode */
     "resolveJsonModule": true,
