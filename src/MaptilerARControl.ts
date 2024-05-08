@@ -389,7 +389,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   off(evtname: string) {
-    super.off();
+    super.off(evtname);
   }
 
   onAdd(map: maplibregl.Map): HTMLElement {
