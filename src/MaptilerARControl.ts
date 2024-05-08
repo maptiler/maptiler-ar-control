@@ -380,6 +380,18 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.logo = options.logo;
   }
 
+  on(evtname: string, cb: () => void) {
+    super.on(evtname, cb);
+  }
+
+  once(evtname: string, cb: () => void) {
+    super.once(evtname, cb);
+  }
+
+  off(evtname: string) {
+    super.off();
+  }
+
   onAdd(map: maplibregl.Map): HTMLElement {
     this.setMap(map as Map);
 
@@ -866,7 +878,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // @ts-ignore
     mapTexture.colorSpace = THREE.SRGBColorSpace; // for some reason, the TS types do not mention this
-    mapTexture.colorSpace = THREE.sRGBEncoding;
+    // mapTexture.colorSpace = THREE.sRGBEncoding;
     mapTexture.needsUpdate = true;
     this.itemsToDispose.push(mapTexture);
 
