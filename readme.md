@@ -27,10 +27,12 @@ npm install @maptiler/sdk @maptiler/ar-control
 Then in your code, import the control:
 ```js
 // Import MapTiler SDK
-import maptilersdk from "@maptiler/sdk";
+import * as maptilersdk from "@maptiler/sdk";
 
 // Import the AR Control
-import maptilerarcontrol from "@maptiler/ar-control";
+import * as maptilerarcontrol from "@maptiler/ar-control";
+// Or specifically:
+import { MaptilerARControl } from "@maptiler/ar-control";
 ```
 
 ⚠️ with **NextJS**, the AR control module must be dynamically imported:

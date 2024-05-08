@@ -6,6 +6,7 @@
 - updated ThreeJS and Model-Viewer dep
 - Remode legacy Threejs constant
 - encapsulated the event calls `.on`, `.once` and `.off`
+- fixes in the readme
 
 
 ## v1.2.0
