@@ -110,20 +110,27 @@
       }
 
       #instruction {
-        z-index: 2;
+        z-index: 20;
         position: absolute;
         font-family: sans-serif;
         background: #fff;
-        padding: 10px 25px;
+        padding: 5px 10px;
         bottom: 0;
         margin: auto;
         width: fit-content;
         height: fit-content;
         left: 0;
-        right: 0;
-        border-top-left-radius: 6px;
+        top: 0;
+        border-bottom-right-radius: 6px;
         border-top-right-radius: 6px;
         filter: drop-shadow(0 0 0.75rem #0005);
+        display: grid;
+      }
+
+      #instruction > * {
+        margin: 10px 0;
+        width: 60px;
+        height: 60px;
       }
 
       .key {
@@ -143,8 +150,11 @@
 
 
     <div id="instruction">
-      <span>Press the key <span class="key">A</span> to show compute AR model, and <span class="key">Q</span> to quit the AR modal.</span>
+      <button id="go-ar">AR</button>
+      <button id="go-back">BACK</button>
     </div>
+
+
 
     <div id="map"></div>
     <script>
@@ -179,21 +189,6 @@
           activateAR: true,
         });
 
-        document.addEventListener('keypress', async (event) => {
-          console.log(event.key);
-
-          if (event.key === "a") {
-            await arControl.run()
-          }
-
-          if (event.key === "q") {
-            try{
-              await arControl.close();
-            } catch(e) {}
-          }
-
-        }, false);
-
         console.log(arControl);
 
         arControl.on("computeStart", (e) => {
@@ -202,6 +197,15 @@
 
         arControl.on("computeEnd", (e) => {
           overlay.style.display = "none";
+        })
+
+
+        document.getElementById("go-ar").addEventListener("click", () => {
+          arControl.run();
+        })
+
+        document.getElementById("go-back").addEventListener("click", () => {
+          arControl.close();
         })
 
         map.addControl(arControl, "top-left");
