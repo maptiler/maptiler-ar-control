@@ -1,5 +1,11 @@
 # MapTiler AR Control Changelog
 
+# v2.0.0
+### New Features
+- Update dependency to MapTiler SDK v2
+### Others
+- Now using USDZ exporter from ThreeJS as it is no longer limited to 1024 textures
+
 ## v1.3.0
 ### Bug Fixes
 - Package.json optimisation for greater compatibility
@@ -7,7 +13,6 @@
 - Remode legacy Threejs constant
 - encapsulated the event calls `.on`, `.once` and `.off`
 - fixes in the readme
-
 
 ## v1.2.0
 ### New Features

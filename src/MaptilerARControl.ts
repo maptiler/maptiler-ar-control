@@ -7,7 +7,7 @@ import * as platformConstants from "./platform-constants.ts";
 import EventEmitter from "events";
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
-import { USDZExporter } from "./USDZExporter";
+import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { addWatermarkToContext } from "./tools";
 
 type CameraSettings = {
@@ -1090,7 +1090,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
   private async getModelBlobUSDZ(): Promise<Blob> {
     const exporter = new USDZExporter();
-    const arraybuffer = await exporter.parse(this.threeSceneUSDZ);
+    const arraybuffer = await exporter.parse(this.threeSceneUSDZ, {
+      maxTextureSize: 8192,
+    });
     const blob = new Blob([arraybuffer], {
       type: "model/vnd.usdz+zip",
     });
