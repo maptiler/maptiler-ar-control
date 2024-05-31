@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
+import { Map, LngLatBounds, LngLat, IControl, math } from "@maptiler/sdk";
 import { ModelViewerElement } from "@google/model-viewer";
 import * as platformConstants from "./platform-constants.ts";
 
@@ -36,35 +36,6 @@ function removeDomNode(node: HTMLElement) {
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
 const MAX_ZOOM = 16;
-
-function latLon2Tile(
-  zoom: number,
-  lon: number,
-  lat: number,
-  round = true
-): TileIndex2D {
-  const x = ((lon + 180) / 360) * Math.pow(2, zoom);
-  const y =
-    ((1 -
-      Math.log(
-        Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
-      ) /
-        Math.PI) /
-      2) *
-    Math.pow(2, zoom);
-
-  if (round) {
-    return {
-      x: Math.floor(x),
-      y: Math.floor(y),
-    };
-  } else {
-    return {
-      x,
-      y,
-    };
-  }
-}
 
 export function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement {
   // Create a blank canvas
@@ -594,8 +565,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     // Wait for the map to be fully loaded on the top view
     await idleAsync(this.map);
     this.colorData = this.grabGlData();
-    console.log(">>>>>", this.colorData);
-
     this.emit("endComputeColorData", {});
   }
 
@@ -715,13 +684,30 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const east = bounds.getEast();
     const west = bounds.getWest();
 
-    const tileIndexTopLeft = latLon2Tile(zoom, west, north, false);
+    const tileIndexTopLeftArr = math.wgs84ToTileIndex(
+      [west, north],
+      zoom,
+      false
+    );
+    const tileIndexTopLeft = {
+      x: tileIndexTopLeftArr[0],
+      y: tileIndexTopLeftArr[1],
+    } as TileIndex2D;
+
     const tileIndexTopLeftFloored = {
       x: Math.floor(tileIndexTopLeft.x),
       y: Math.floor(tileIndexTopLeft.y),
     };
 
-    const tileIndexBottomRight = latLon2Tile(zoom, east, south, false);
+    const tileIndexBottomRightArr = math.wgs84ToTileIndex(
+      [east, south],
+      zoom,
+      false
+    );
+    const tileIndexBottomRight = {
+      x: tileIndexBottomRightArr[0],
+      y: tileIndexBottomRightArr[1],
+    } as TileIndex2D;
     const tileIndexBottomRightFloored = {
       x: Math.floor(tileIndexBottomRight.x),
       y: Math.floor(tileIndexBottomRight.y),

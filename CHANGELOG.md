@@ -3,6 +3,8 @@
 ## 2.0.1
 ### Bug Fixes
 - Fixed: when displayed bound were wider than 180° the Haversine distance used was from the back of Earth, resulting in a too narrow 3D model
+### Others
+- Now using MapTiler SDK `math.wgs84ToTileIndex()` function instead of a custom function
 
 ## 2.0.0
 ### New Features
