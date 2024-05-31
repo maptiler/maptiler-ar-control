@@ -594,6 +594,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     // Wait for the map to be fully loaded on the top view
     await idleAsync(this.map);
     this.colorData = this.grabGlData();
+    console.log(">>>>>", this.colorData);
+    
     this.emit("endComputeColorData", {});
   }
 
@@ -906,7 +908,23 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.itemsToDispose.push(this.usdzMaterial);
 
     const bounds = this.mapCaptureBounds;
-    const widthMeter = bounds.getSouthEast().distanceTo(bounds.getSouthWest());
+
+    // The bounds:
+    //
+    // A-----B-----C   If the width (in meter) is computed from G to I, like it used to be the case,
+    // |           |   then if the bound is wider than 180° the .distanceTo() will return the distance
+    // |           |   on the back of Earth, as it is the shortest and the one retrieved by Haversine.
+    // D     E     F   
+    // |           |   One solution is to compute the distance of the bound along the longitude axis
+    // |           |   as it is displayed is to compute D.distanceTo(E) + E.distanceTo(F)
+    // G-----H-----I
+
+    // We will leverage the fact that the bounds are put axis-aligned earlier in the plugin so that D.lat is E.lat
+    const d = new LngLat(bounds.getWest(), bounds.getCenter().lat);
+    const e = bounds.getCenter()
+    const f = new LngLat(bounds.getEast(), bounds.getCenter().lat);
+
+    const widthMeter = d.distanceTo(e) + e.distanceTo(f);
     const heightMeter = bounds.getSouthEast().distanceTo(bounds.getNorthEast());
 
     // creating the mountain mesh and adding it to the scene

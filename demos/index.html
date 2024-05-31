@@ -92,7 +92,7 @@
       const map = new maptilersdk.Map({
         container: 'map',
         style: maptilersdk.MapStyle.OUTDOOR,
-        terrain: true,
+        terrain: false,
         hash: true,
         geolocate: true,
       });
@@ -103,13 +103,13 @@
 
         console.log(arControl);
 
-        arControl.on("computeStart", (e) => {
-          overlay.style.display = "inherit";
-        })
+        // arControl.on("computeStart", (e) => {
+        //   overlay.style.display = "inherit";
+        // })
 
-        arControl.on("computeEnd", (e) => {
-          overlay.style.display = "none";
-        })
+        // arControl.on("computeEnd", (e) => {
+        //   overlay.style.display = "none";
+        // })
 
         map.addControl(arControl, "top-left");
       })
