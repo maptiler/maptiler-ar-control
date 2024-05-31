@@ -1,6 +1,6 @@
 {
   "name": "@maptiler/ar-control",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "AR Control for MapTiler SDK",
   "type": "module",
   "homepage": "https://docs.maptiler.com/sdk-js/modules/ar/",
