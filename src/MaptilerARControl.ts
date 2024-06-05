@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
+import { Map, LngLatBounds, LngLat, IControl, math } from "@maptiler/sdk";
 import { ModelViewerElement } from "@google/model-viewer";
 import * as platformConstants from "./platform-constants.ts";
 
@@ -36,35 +36,6 @@ function removeDomNode(node: HTMLElement) {
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
 const MAX_ZOOM = 16;
-
-function latLon2Tile(
-  zoom: number,
-  lon: number,
-  lat: number,
-  round = true
-): TileIndex2D {
-  const x = ((lon + 180) / 360) * Math.pow(2, zoom);
-  const y =
-    ((1 -
-      Math.log(
-        Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
-      ) /
-        Math.PI) /
-      2) *
-    Math.pow(2, zoom);
-
-  if (round) {
-    return {
-      x: Math.floor(x),
-      y: Math.floor(y),
-    };
-  } else {
-    return {
-      x,
-      y,
-    };
-  }
-}
 
 export function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement {
   // Create a blank canvas
@@ -713,13 +684,30 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const east = bounds.getEast();
     const west = bounds.getWest();
 
-    const tileIndexTopLeft = latLon2Tile(zoom, west, north, false);
+    const tileIndexTopLeftArr = math.wgs84ToTileIndex(
+      [west, north],
+      zoom,
+      false
+    );
+    const tileIndexTopLeft = {
+      x: tileIndexTopLeftArr[0],
+      y: tileIndexTopLeftArr[1],
+    } as TileIndex2D;
+
     const tileIndexTopLeftFloored = {
       x: Math.floor(tileIndexTopLeft.x),
       y: Math.floor(tileIndexTopLeft.y),
     };
 
-    const tileIndexBottomRight = latLon2Tile(zoom, east, south, false);
+    const tileIndexBottomRightArr = math.wgs84ToTileIndex(
+      [east, south],
+      zoom,
+      false
+    );
+    const tileIndexBottomRight = {
+      x: tileIndexBottomRightArr[0],
+      y: tileIndexBottomRightArr[1],
+    } as TileIndex2D;
     const tileIndexBottomRightFloored = {
       x: Math.floor(tileIndexBottomRight.x),
       y: Math.floor(tileIndexBottomRight.y),
@@ -906,7 +894,23 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.itemsToDispose.push(this.usdzMaterial);
 
     const bounds = this.mapCaptureBounds;
-    const widthMeter = bounds.getSouthEast().distanceTo(bounds.getSouthWest());
+
+    // The bounds:
+    //
+    // A-----B-----C   If the width (in meter) is computed from G to I, like it used to be the case,
+    // |           |   then if the bound is wider than 180° the .distanceTo() will return the distance
+    // |           |   on the back of Earth, as it is the shortest and the one retrieved by Haversine.
+    // D     E     F
+    // |           |   One solution is to compute the distance of the bound along the longitude axis
+    // |           |   as it is displayed is to compute D.distanceTo(E) + E.distanceTo(F)
+    // G-----H-----I
+
+    // We will leverage the fact that the bounds are put axis-aligned earlier in the plugin so that D.lat is E.lat
+    const d = new LngLat(bounds.getWest(), bounds.getCenter().lat);
+    const e = bounds.getCenter();
+    const f = new LngLat(bounds.getEast(), bounds.getCenter().lat);
+
+    const widthMeter = d.distanceTo(e) + e.distanceTo(f);
     const heightMeter = bounds.getSouthEast().distanceTo(bounds.getNorthEast());
 
     // creating the mountain mesh and adding it to the scene
