@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://docs.maptiler.com/sdk-js/">official page →</a><br>
-  <img src="images/maptiler-ar-control-logo.svg" width="400px">
+  <a href="https://docs.maptiler.com/sdk-js/modules/ar/">official page →</a><br>
+  <img src="https://cdn.maptiler.com/maptiler-ar-control/assets/maptiler-ar-control-logo.svg" width="400px">
 </p>
 
 <p align="center" style="color: #AAA">
@@ -8,15 +8,15 @@
 </p>
 
 <p align="center">
-  <img src="images/JS-logo.svg" width="20px">
-  <img src="images/TS-logo.svg" width="20px">
+  <img src="https://cdn.maptiler.com/assets/images/JS-logo.svg" width="20px">
+  <img src="https://cdn.maptiler.com/assets/images/TS-logo.svg" width="20px">
   <img src="https://img.shields.io/npm/v/@maptiler/ar-control"></img>
   <img src="https://img.shields.io/twitter/follow/maptiler?style=social"></img>
 </p>
 
 This AR control adds a button on your MapTiler SDK's Map to create a 3D model of the viewport, including 3D terrain and any layer you have put on top.  
 If your device is compatible with **WebXR** or **Apple Quick Look**, the **Enable AR** button will show up. Then you can position and interact with the 3D model on your own space!
-![screenshot of the project's 3D view](images/screenshot.jpg)
+![screenshot of the project's 3D view](https://cdn.maptiler.com/maptiler-ar-control/assets/screenshots/screenshot.jpg)
 
 # Install
 ## ES module from NPM
@@ -114,7 +114,7 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 - `activateAR` (boolean): When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready. Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to. Default: `false`
 - `highRes` (boolean): increases the resolution of the texture. Will most likely have no effect on iOS due to some format limitation. Default: `false`.
 
-![](images/screenshot2.jpg)
+![](https://cdn.maptiler.com/maptiler-ar-control/assets/screenshots/screenshot2.jpg)
 
 # Methods
 

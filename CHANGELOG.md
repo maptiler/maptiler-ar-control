@@ -1,5 +1,9 @@
 # MapTiler AR Control Changelog
 
+## 2.0.2
+### Bug Fixes
+- Readme images are now stored on MapTiler CDN to be visible from NPM
+
 ## 2.0.1
 ### Bug Fixes
 - Fixed: when displayed bound were wider than 180° the Haversine distance used was from the back of Earth, resulting in a too narrow 3D model
