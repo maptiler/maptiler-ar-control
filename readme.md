@@ -125,6 +125,12 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 # Capacitor integration (iOS)
 MapTiler SDK can be used efficiently with [CapacitorJS](https://capacitorjs.com/) to create beautiful native maps-centric apps. This AR Control has been design to work in such scenario, though a different scenrio is unrolled internaly: there will be no intermediate 3D model and instead Apple Quicklook will directly open.
 
+Your mobile app (or at least the compinent that installed on the mobile device) needs to have these Capacitor dependencies installed:
+
+```
+npm install @capacitor/core @capacitor/filesystem @capacitor-community/file-opener
+```
+
 # License
 MapTiler AR Control
 
