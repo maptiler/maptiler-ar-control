@@ -27,10 +27,12 @@ npm install @maptiler/sdk @maptiler/ar-control
 Then in your code, import the control:
 ```js
 // Import MapTiler SDK
-import maptilersdk from "@maptiler/sdk";
+import * as maptilersdk from "@maptiler/sdk";
 
 // Import the AR Control
-import maptilerarcontrol from "@maptiler/ar-control";
+import * as maptilerarcontrol from "@maptiler/ar-control";
+// Or specifically:
+import { MaptilerARControl } from "@maptiler/ar-control";
 ```
 
 ⚠️ with **NextJS**, the AR control module must be dynamically imported:
@@ -94,7 +96,7 @@ There are two events:
 
 The AR control performs some temporary changes to the map view, so these events are handy to hide those transformations behind a curtain or displaying a message.
 
-In the [example](./examples/index.html), we show a fullscreen overlay with a waiting message at `computeStart` and hide it at `computeEnd`, just by dynamically updating the `.style.display` property of the overlay.  
+In the [example](./examples/index.html), we show a fullscreen overlay with a waiting message at `computeStart` and hides it at `computeEnd`, just by dynamically updating the `.style.display` property of the overlay. Keep in mind that the `z-index` CSS property of this overlay must be higher than the 3D model view, so greater than `3`.    
 When using React, you may want to replace this logic by a change of state.
 
 # Options
@@ -110,6 +112,7 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 - `logoHeight`(number): the height of the logo in pixels (if any). Default: `60`
 - `logoClass` (string): CSS class to add to the class list of the `<img>` element holding the logo (if any). If used, the `.logoHeight` as well as the default styling will no longer be applied.
 - `activateAR` (boolean): When the platform allows, setting this to `true` automatically activates the AR mode as soon as the data is ready. Quick Look on iOS is likely to allow this, while WebXR on Android is not likeley to. Default: `false`
+- `highRes` (boolean): increases the resolution of the texture. Will most likely have no effect on iOS due to some format limitation. Default: `false`.
 
 ![](images/screenshot2.jpg)
 
@@ -118,6 +121,9 @@ The constructor `MaptilerARControl` accepts an option object to customize the lo
 - `.run()`: programmatically run the computation of the 3D model. This can be used in replacement of a click on the control
 - `.close()`: programmatically closes the overlay containing the 3D model
 - `.updateLogo(src: string)`: updates the `src` of the logo. This can only be used if the `.logo` option was set in the constructor. Can be coupled with the `computeStart` event to refresh the information, for isntance a dynamically generated QR code that would contain info about the place being processed.
+
+# Capacitor integration (iOS)
+MapTiler SDK can be used efficiently with [CapacitorJS](https://capacitorjs.com/) to create beautiful native maps-centric apps. This AR Control has been design to work in such scenario, though a different scenrio is unrolled internaly: there will be no intermediate 3D model and instead Apple Quicklook will directly open.
 
 # License
 MapTiler AR Control

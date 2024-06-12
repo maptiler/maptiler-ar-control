@@ -47,7 +47,6 @@ export function addWatermarkToContext(
   });
 }
 
-
 export function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, _) => {
     const reader = new FileReader();
@@ -57,8 +56,7 @@ export function blobToBase64(blob: Blob): Promise<string> {
       } else {
         resolve("");
       }
-        
-    }
+    };
     reader.readAsDataURL(blob);
   });
 }

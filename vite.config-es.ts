@@ -8,7 +8,6 @@ const plugins = [
   dts({insertTypesEntry: true}),
 ];
 
-
 export default defineConfig({
   mode: isProduction ? "production" : "development",
   build: {

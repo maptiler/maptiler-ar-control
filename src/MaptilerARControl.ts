@@ -1,18 +1,18 @@
 // @ts-nocheck
 
-import { Map, LngLatBounds, LngLat, IControl } from "@maptiler/sdk";
+import { Map, LngLatBounds, LngLat, IControl, math } from "@maptiler/sdk";
 import { ModelViewerElement } from "@google/model-viewer";
+import * as platformConstants from "./platform-constants.ts";
 
-import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
-import { FileOpener }  from "@capacitor-community/file-opener";
+import { FileOpener } from "@capacitor-community/file-opener";
 
 import EventEmitter from "events";
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
-import { USDZExporter } from "./USDZExporter";
+import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { addWatermarkToContext, blobToBase64 } from "./tools";
-
 
 type CameraSettings = {
   center: LngLat;
@@ -39,35 +39,7 @@ function removeDomNode(node: HTMLElement) {
 
 const MIN_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
-
-function latLon2Tile(
-  zoom: number,
-  lon: number,
-  lat: number,
-  round = true
-): TileIndex2D {
-  const x = ((lon + 180) / 360) * Math.pow(2, zoom);
-  const y =
-    ((1 -
-      Math.log(
-        Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
-      ) /
-        Math.PI) /
-      2) *
-    Math.pow(2, zoom);
-
-  if (round) {
-    return {
-      x: Math.floor(x),
-      y: Math.floor(y),
-    };
-  } else {
-    return {
-      x,
-      y,
-    };
-  }
-}
+const MAX_ZOOM = 16;
 
 export function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement {
   // Create a blank canvas
@@ -266,6 +238,12 @@ export type MaptilerARControlOptions = {
    * Default: `false`
    */
   activateAR?: boolean;
+
+  /**
+   * Generate a mesh with a higher resolution texture.
+   * Default: `false`
+   */
+  highRes?: false;
 };
 
 const defaultOptionValues: MaptilerARControlOptions = {
@@ -293,6 +271,7 @@ const defaultOptionValues: MaptilerARControlOptions = {
   edgeColor: "#7b8487",
   logo: "",
   activateAR: false,
+  highRes: false,
 };
 
 const defaultArButtonStyle = {
@@ -376,6 +355,18 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.logo = options.logo;
   }
 
+  on(evtname: string, cb: () => void) {
+    super.on(evtname, cb);
+  }
+
+  once(evtname: string, cb: () => void) {
+    super.once(evtname, cb);
+  }
+
+  off(evtname: string) {
+    super.off(evtname);
+  }
+
   onAdd(map: maplibregl.Map): HTMLElement {
     this.setMap(map as Map);
 
@@ -394,11 +385,36 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       iconSpan.className = "maplibregl-ctrl-icon";
       iconSpan.setAttribute("aria-hidden", "true");
       this.controlButton.appendChild(iconSpan);
-      iconSpan.innerHTML = `
-      <svg width="100%" height="100%" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+      const boxIcon = `
+      <svg width="100%" height="100%" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
         <path d="M22.701,35.306L14.997,30.784C14.621,30.554 14.33,30.251 14.121,29.873C13.913,29.496 13.81,29.091 13.81,28.659L13.81,19.652C13.81,19.22 13.913,18.815 14.121,18.438C14.33,18.061 14.621,17.757 14.997,17.527L22.737,12.925C23.117,12.706 23.537,12.595 23.996,12.595C24.454,12.595 24.874,12.706 25.255,12.925L32.994,17.527C33.37,17.757 33.662,18.061 33.87,18.438C34.078,18.815 34.183,19.22 34.183,19.652L34.183,28.659C34.183,29.091 34.075,29.496 33.861,29.873C33.647,30.251 33.346,30.554 32.959,30.784L25.147,35.306C24.759,35.532 24.348,35.644 23.918,35.644C23.487,35.644 23.081,35.532 22.701,35.306ZM25.073,32.57L31.735,28.582L31.735,20.945L25.073,24.754L25.073,32.57ZM22.918,32.57L22.918,24.754L16.292,20.945L16.292,28.582L22.918,32.57ZM23.996,15.159L17.361,18.97L23.996,22.809L30.631,18.97L23.996,15.159Z" style="fill:rgb(68,73,82);"/>
       </svg>
       `;
+
+      const boxIconWithBrackets = `
+      <svg width="100%" height="100%" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+        <path d="M22.701,35.306L14.997,30.784C14.621,30.554 14.33,30.251 14.121,29.873C13.913,29.496 13.81,29.091 13.81,28.659L13.81,19.652C13.81,19.22 13.913,18.815 14.121,18.438C14.33,18.061 14.621,17.757 14.997,17.527L22.737,12.925C23.117,12.706 23.537,12.595 23.996,12.595C24.454,12.595 24.874,12.706 25.255,12.925L32.994,17.527C33.37,17.757 33.662,18.061 33.87,18.438C34.078,18.815 34.183,19.22 34.183,19.652L34.183,28.659C34.183,29.091 34.075,29.496 33.861,29.873C33.647,30.251 33.346,30.554 32.959,30.784L25.147,35.306C24.759,35.532 24.348,35.644 23.918,35.644C23.487,35.644 23.081,35.532 22.701,35.306ZM25.073,32.57L31.735,28.582L31.735,20.945L25.073,24.754L25.073,32.57ZM22.918,32.57L22.918,24.754L16.292,20.945L16.292,28.582L22.918,32.57ZM23.996,15.159L17.361,18.97L23.996,22.809L30.631,18.97L23.996,15.159Z" style="fill:rgb(68,73,82);"/>
+        <g transform="matrix(0.712957,0,0,0.712957,6.88903,6.88903)">
+            <path d="M13.45,44L7,44C6.175,44 5.469,43.706 4.881,43.119C4.294,42.531 4,41.825 4,41L4,34.55L7,34.55L7,41L13.45,41L13.45,44Z" style="fill:rgb(68,73,82);"/>
+        </g>
+        <g transform="matrix(0.712957,0,0,0.712957,6.88903,6.88903)">
+            <path d="M34.55,44L34.55,41L41,41L41,34.55L44,34.55L44,41C44,41.825 43.706,42.531 43.119,43.119C42.531,43.706 41.825,44 41,44L34.55,44Z" style="fill:rgb(68,73,82);"/>
+        </g>
+        <g transform="matrix(0.712957,0,0,0.712957,6.88903,6.88903)">
+            <path d="M4,13.45L4,7C4,6.175 4.294,5.469 4.881,4.881C5.469,4.294 6.175,4 7,4L13.45,4L13.45,7L7,7L7,13.45L4,13.45Z" style="fill:rgb(68,73,82);"/>
+        </g>
+        <g transform="matrix(0.712957,0,0,0.712957,6.88903,6.88903)">
+            <path d="M41,13.45L41,7L34.55,7L34.55,4L41,4C41.825,4 42.531,4.294 43.119,4.881C43.706,5.469 44,6.175 44,7L44,13.45L41,13.45Z" style="fill:rgb(68,73,82);"/>
+        </g>
+      </svg>
+      `;
+
+      iconSpan.innerHTML =
+        this.options.activateAR &&
+        (platformConstants.IS_AR_QUICKLOOK_CANDIDATE ||
+          platformConstants.IS_WEBXR_AR_CANDIDATE)
+          ? boxIconWithBrackets
+          : boxIcon;
 
       this.controlButton.type = "button";
 
@@ -431,9 +447,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     await this.buildMapModel();
 
-    console.log(">>> Capacitor.getPlatform()", Capacitor.getPlatform());
-    
-    if (Capacitor.getPlatform() === 'ios') {
+    if (Capacitor.getPlatform() === "ios") {
       this.runNative();
     } else {
       this.runMobile();
@@ -512,7 +526,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     const topViewCameraSettings = {
       center: this.cameraSettings.center,
-      zoom: this.cameraSettings.zoom,
+      zoom: Math.min(this.cameraSettings.zoom, MAX_ZOOM),
       pitch: 0,
       bearing: 0,
     };
@@ -678,13 +692,30 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const east = bounds.getEast();
     const west = bounds.getWest();
 
-    const tileIndexTopLeft = latLon2Tile(zoom, west, north, false);
+    const tileIndexTopLeftArr = math.wgs84ToTileIndex(
+      [west, north],
+      zoom,
+      false
+    );
+    const tileIndexTopLeft = {
+      x: tileIndexTopLeftArr[0],
+      y: tileIndexTopLeftArr[1],
+    } as TileIndex2D;
+
     const tileIndexTopLeftFloored = {
       x: Math.floor(tileIndexTopLeft.x),
       y: Math.floor(tileIndexTopLeft.y),
     };
 
-    const tileIndexBottomRight = latLon2Tile(zoom, east, south, false);
+    const tileIndexBottomRightArr = math.wgs84ToTileIndex(
+      [east, south],
+      zoom,
+      false
+    );
+    const tileIndexBottomRight = {
+      x: tileIndexBottomRightArr[0],
+      y: tileIndexBottomRightArr[1],
+    } as TileIndex2D;
     const tileIndexBottomRightFloored = {
       x: Math.floor(tileIndexBottomRight.x),
       y: Math.floor(tileIndexBottomRight.y),
@@ -739,6 +770,12 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   private async computeTextures() {
+    const originalPixelRatio = this.map.getPixelRatio();
+
+    if (this.options.highRes) {
+      this.map.setPixelRatio(4);
+    }
+
     // Set the view from top and axis-aligned
     this.enableTopView();
     await this.computeColorData();
@@ -753,6 +790,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const middleEast = new LngLat(this.mapCaptureBounds.getEast(), center.lat);
     const distance = middleEast.distanceTo(middleWest);
     this.meterPerPixelCenter = distance / this.colorData?.width;
+
+    if (this.options.highRes) {
+      this.map.setPixelRatio(originalPixelRatio);
+    }
 
     // Set the camera back to normal
     this.restoreMapSettings();
@@ -833,7 +874,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // @ts-ignore
     mapTexture.colorSpace = THREE.SRGBColorSpace; // for some reason, the TS types do not mention this
-    mapTexture.colorSpace = THREE.sRGBEncoding;
+    // mapTexture.colorSpace = THREE.sRGBEncoding;
     mapTexture.needsUpdate = true;
     this.itemsToDispose.push(mapTexture);
 
@@ -861,7 +902,23 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.itemsToDispose.push(this.usdzMaterial);
 
     const bounds = this.mapCaptureBounds;
-    const widthMeter = bounds.getSouthEast().distanceTo(bounds.getSouthWest());
+
+    // The bounds:
+    //
+    // A-----B-----C   If the width (in meter) is computed from G to I, like it used to be the case,
+    // |           |   then if the bound is wider than 180° the .distanceTo() will return the distance
+    // |           |   on the back of Earth, as it is the shortest and the one retrieved by Haversine.
+    // D     E     F
+    // |           |   One solution is to compute the distance of the bound along the longitude axis
+    // |           |   as it is displayed is to compute D.distanceTo(E) + E.distanceTo(F)
+    // G-----H-----I
+
+    // We will leverage the fact that the bounds are put axis-aligned earlier in the plugin so that D.lat is E.lat
+    const d = new LngLat(bounds.getWest(), bounds.getCenter().lat);
+    const e = bounds.getCenter();
+    const f = new LngLat(bounds.getEast(), bounds.getCenter().lat);
+
+    const widthMeter = d.distanceTo(e) + e.distanceTo(f);
     const heightMeter = bounds.getSouthEast().distanceTo(bounds.getNorthEast());
 
     // creating the mountain mesh and adding it to the scene
@@ -891,8 +948,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       }
     }
 
-    // Flooring the minimum elevation to the lower hundred meter
-    minEle = Math.max(0, ~~(minEle / 100) * 100 - 100);
+    const almostMaxZoom = MAX_ZOOM - 1;
+    const z = Math.min(this.map.getZoom(), almostMaxZoom);
+    minEle = minEle - (50 * (z - almostMaxZoom) ** 2 + 30);
 
     for (let i = 0; i < positionBuf.length / 3; i += 1) {
       const r = this.terrainData.pixelData[i * 4];
@@ -990,7 +1048,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
       // error
       (err) => {
-        console.log("error:", err);
+        console.warn("error:", err);
       },
 
       // options
@@ -1044,7 +1102,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
   private async getModelBlobUSDZ(): Promise<Blob> {
     const exporter = new USDZExporter();
-    const arraybuffer = await exporter.parse(this.threeSceneUSDZ);
+    const arraybuffer = await exporter.parse(this.threeSceneUSDZ, {
+      maxTextureSize: 8192,
+    });
     const blob = new Blob([arraybuffer], {
       type: "model/vnd.usdz+zip",
     });
@@ -1070,11 +1130,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       filePath: info.uri,
       contentType: "model/vnd.usdz+zip",
       openWithDefault: true,
-    })
+    });
 
     this.emit("computeEnd");
   }
-
 
   private async runMobile() {
     if (!typeof window) return;
@@ -1082,7 +1141,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const container = this.map.getContainer();
     const modelBlobGLB = await this.getModelBlobGLB();
     const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
-    this.emit("computeEnd");
 
     this.modelViewer = new ModelViewerElement();
     this.modelViewer.src = modelObjectURLGLB;
@@ -1142,8 +1200,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     this.modelViewer.appendChild(this.closeButton);
 
-    // this.modelViewer.activateAR();
-
     this.closeButton.addEventListener("click", async () => {
       this.close();
     });
@@ -1180,11 +1236,19 @@ export class MaptilerARControl extends EventEmitter implements IControl {
           try {
             await this.modelViewer.activateAR();
             successfullyEnabledAR = true;
+            // Waiting a sec before fireing event because Quicklook takes some time to start
+            setTimeout(() => this.emit("computeEnd"), 1000);
           } catch (e) {
-            console.warn("AR to be automatatically activated but failed.");
+            console.warn("AR to be automatically activated but failed.");
+            this.emit("computeEnd");
           }
+        } else {
+          console.warn("AR cannot be automatically activated.");
+          this.emit("computeEnd");
         }
       });
+    } else {
+      this.emit("computeEnd");
     }
 
     this.modelViewer.addEventListener(
