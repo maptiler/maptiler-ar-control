@@ -49,13 +49,13 @@
     "prettier": "^2.8.8",
     "typescript": "^5.0.4",
     "vite": "^4.4.8",
-    "vite-plugin-dts": "^3.4.0"
+    "vite-plugin-dts": "^3.4.0",
+    "@typescript-eslint/typescript-estree": "^7.0.2",
+    "@types/events": "^3.0.0"
   },
   "dependencies": {
     "@google/model-viewer": "^3.5.0",
     "@maptiler/sdk": "^2.0.3",
-    "@types/events": "^3.0.0",
-    "@typescript-eslint/typescript-estree": "^7.0.2",
     "events": "^3.3.0",
     "three": "^0.163.0",
     "@capacitor-community/file-opener": "^1.0.5",

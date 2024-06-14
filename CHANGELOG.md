@@ -3,6 +3,8 @@
 ## 2.1.0
 ### New Features
 - Now working also with Capacitor inside a mobile app (iOS only)
+### Others
+- Optimization of the UMD bundle size
 
 
 ## 2.0.1

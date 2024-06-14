@@ -48,7 +48,7 @@ export function addWatermarkToContext(
 }
 
 export function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, _) => {
+  return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onloadend = () => {
       if (typeof reader.result === "string") {
