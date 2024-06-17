@@ -4,11 +4,15 @@ import { Map, LngLatBounds, LngLat, IControl, math } from "@maptiler/sdk";
 import { ModelViewerElement } from "@google/model-viewer";
 import * as platformConstants from "./platform-constants.ts";
 
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Capacitor } from "@capacitor/core";
+import { FileOpener } from "@capacitor-community/file-opener";
+
 import EventEmitter from "events";
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
-import { addWatermarkToContext } from "./tools";
+import { addWatermarkToContext, blobToBase64 } from "./tools";
 
 type CameraSettings = {
   center: LngLat;
@@ -443,7 +447,11 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     await this.buildMapModel();
 
-    await this.displayModal();
+    if (Capacitor.getPlatform() === "ios") {
+      this.runNative();
+    } else {
+      this.runMobile();
+    }
 
     this.lock = false;
   }
@@ -1104,7 +1112,30 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     return blob;
   }
 
-  private async displayModal() {
+  private async runNative() {
+    this.threeTileContainerUSDZ.updateMatrix();
+    this.threeTileContainerUSDZ.updateMatrixWorld();
+    const blob = await this.getModelBlobUSDZ();
+    const b64 = await blobToBase64(blob);
+
+    // Write the file in cache
+    const info = await Filesystem.writeFile({
+      path: "some_mesh.usdz",
+      directory: Directory.Cache,
+      data: b64,
+    });
+
+    // Open the file wirtten in cache
+    await FileOpener.open({
+      filePath: info.uri,
+      contentType: "model/vnd.usdz+zip",
+      openWithDefault: true,
+    });
+
+    this.emit("computeEnd");
+  }
+
+  private async runMobile() {
     if (!typeof window) return;
 
     const container = this.map.getContainer();
