@@ -1,8 +1,13 @@
 # MapTiler AR Control Changelog
 
-## 2.0.2
+## 2.1.0
+### New Features
+- Now working also with Capacitor inside a mobile app (iOS only)
+### Others
+- Optimization of the UMD bundle size
 ### Bug Fixes
 - Readme images are now stored on MapTiler CDN to be visible from NPM
+
 
 ## 2.0.1
 ### Bug Fixes
