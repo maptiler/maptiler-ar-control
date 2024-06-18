@@ -5,6 +5,8 @@
 - Now working also with Capacitor inside a mobile app (iOS only)
 ### Others
 - Optimization of the UMD bundle size
+### Bug Fixes
+- Readme images are now stored on MapTiler CDN to be visible from NPM
 
 
 ## 2.0.1
