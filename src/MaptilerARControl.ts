@@ -1019,6 +1019,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     }
   }
 
+  // Export warning!
+  // This function should not be used.
+  // Saving model and self-hosting is illegal and against MapTiler Terms https://www.maptiler.com/terms/
   downloadGLTF(binary = false) {
     this.threeTileContainerGLTF.updateMatrix();
     this.threeTileContainerGLTF.updateMatrixWorld();
@@ -1059,6 +1062,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     );
   }
 
+  // Export warning!
+  // This function should not be used.
+  // Saving model and self-hosting is illegal and against MapTiler Terms https://www.maptiler.com/terms/
   async downloadUSDZ() {
     this.threeTileContainerUSDZ.updateMatrix();
     this.threeTileContainerUSDZ.updateMatrixWorld();
@@ -1072,6 +1078,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     link.click();
   }
 
+  // Export warning!
+  // This function should not be used.
+  // Saving model and self-hosting is illegal and against MapTiler Terms https://www.maptiler.com/terms/
   private async getModelBlobGLB(): Promise<Blob> {
     return new Promise((resolve, reject) => {
       this.gltfExporter.parse(
@@ -1100,6 +1109,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     });
   }
 
+  // Export warning!
+  // This function should not be used.
+  // Saving model and self-hosting is illegal and against MapTiler Terms https://www.maptiler.com/terms/
   private async getModelBlobUSDZ(): Promise<Blob> {
     const exporter = new USDZExporter();
     const arraybuffer = await exporter.parse(this.threeSceneUSDZ, {
