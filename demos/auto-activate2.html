@@ -130,8 +130,6 @@
 
       // Waiting for the map to be ready
       map.on("load", (e) => {
-        console.log(">>>>>> user agent", navigator.userAgent);
-
 
         const qrCodeOptions = isMobile ? {} : {
             logo: generateQRCode(generateQRCode()),
