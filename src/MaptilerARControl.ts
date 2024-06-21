@@ -1216,6 +1216,12 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.close();
     });
 
+    // Adding the attribution
+    const attribDiv = this.createAttributionElement();
+    if (attribDiv) {
+      this.modelViewer.appendChild(attribDiv);
+    }
+
     // Adding a logo image
     if (this.logo) {
       this.logoImgElement = document.createElement("img");
@@ -1295,5 +1301,36 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.logo = src;
       this.logoImgElement.src = src;
     }
+  }
+
+  private createAttributionElement(): HTMLDivElement | null {
+    // We are looking for an attribution control, and use its html content
+    const attribHTML = this.map._controls
+      .filter((c) => c._attribHTML)
+      .map((c) => c._attribHTML);
+    if (!attribHTML.length) return null;
+
+    const attribDiv = document.createElement("div") as HTMLDivElement;
+    attribDiv.innerHTML = attribHTML[0];
+    attribDiv.style.setProperty(
+      "font-family",
+      "12px / 20px Helvetica Neue, Arial, Helvetica, sans-serif"
+    );
+    attribDiv.style.setProperty("position", "absolute");
+    attribDiv.style.setProperty("bottom", 0);
+    attribDiv.style.setProperty("right", 0);
+    attribDiv.style.setProperty("width", "fit-content");
+    attribDiv.style.setProperty("height", "fit-content");
+    attribDiv.style.setProperty("padding", "1px 4px");
+    attribDiv.style.setProperty("font-size", "12px");
+    attribDiv.style.setProperty("background", "#FFFFFF80");
+
+    const links = attribDiv.getElementsByTagName("a");
+    for (const link of links) {
+      link.style.setProperty("color", "#000000");
+      link.style.setProperty("text-decoration", "none");
+    }
+
+    return attribDiv;
   }
 }
