@@ -1,6 +1,12 @@
 // @ts-nocheck
 
-import { Map, LngLatBounds, LngLat, IControl, math } from "@maptiler/sdk";
+import {
+  type Map,
+  type LngLatBounds,
+  LngLat,
+  type IControl,
+  math,
+} from "@maptiler/sdk";
 import { ModelViewerElement } from "@google/model-viewer";
 import * as platformConstants from "./platform-constants.ts";
 

@@ -1,5 +1,9 @@
 # MapTiler AR Control Changelog
 
+## 2.1.3
+### Others
+- Updating with SDK v2.4.0
+
 ## 2.1.2
 ### New Features
 - Display the attribution on top of the 3D model view (web)
