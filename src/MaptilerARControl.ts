@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import {
-  type Map,
+  type Map as MapSDK,
   type LngLatBounds,
   LngLat,
   type IControl,
@@ -117,12 +117,12 @@ function injectToContext(
     const image = new Image();
     image.crossOrigin = "anonymous";
     image.src = imageUrl;
-    image.onload = function () {
+    image.onload = () => {
       context.drawImage(image, topLeftPosition[0], topLeftPosition[1]);
       resolve();
     };
 
-    image.onerror = function () {
+    image.onerror = () => {
       resolve();
     };
   });
@@ -159,8 +159,8 @@ function cropCanvas(
  * @param map
  * @returns
  */
-function idleAsync(map: Map) {
-  return new Promise<boolean>(function (myResolve) {
+function idleAsync(map: MapSDK) {
+  return new Promise<boolean>((myResolve) => {
     map.once("idle", () => {
       myResolve(true);
     });
@@ -313,7 +313,7 @@ const defaultCloseButtonStyle = {
 export class MaptilerARControl extends EventEmitter implements IControl {
   private controlButton!: HTMLButtonElement;
   private controlButtonContainer!: HTMLDivElement;
-  private map!: Map;
+  private map!: MapSDK;
   private colorData: MapTextureData | null = null;
   private landMaskData: MapTextureData | null = null;
   private terrainData: MapTextureData | null = null;
@@ -374,7 +374,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   onAdd(map: maplibregl.Map): HTMLElement {
-    this.setMap(map as Map);
+    this.setMap(map as MapSDK);
 
     // Creation of the button to show on map
     this.controlButtonContainer = window.document.createElement("div");
@@ -469,7 +469,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     );
   }
 
-  setMap(m: Map) {
+  setMap(m: MapSDK) {
     this.map = m;
   }
 
@@ -943,7 +943,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const h = this.terrainData.height;
 
     // detecting the minimum elevation
-    let minEle = +Infinity;
+    let minEle = Number.POSITIVE_INFINITY;
     for (let i = 0; i < positionBuf.length / 3; i += 1) {
       const r = this.terrainData.pixelData[i * 4];
       const g = this.terrainData.pixelData[i * 4 + 1];
@@ -1154,7 +1154,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   private async runMobile() {
-    if (!typeof window) return;
+    if (typeof window === "undefined") return;
 
     const container = this.map.getContainer();
     const modelBlobGLB = await this.getModelBlobGLB();
@@ -1183,9 +1183,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (this.options.arButtonClassName) {
       this.arButton.classList.add(this.options.arButtonClassName);
     } else {
-      Object.keys(defaultArButtonStyle).forEach((el) => {
+      for (const el of Object.keys(defaultArButtonStyle)) {
         this.arButton.style[el] = defaultArButtonStyle[el];
-      });
+      }
     }
 
     // Adding content to the AR button
@@ -1204,9 +1204,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     if (this.options.closeButtonClassName) {
       this.closeButton.classList.add(this.options.closeButtonClassName);
     } else {
-      Object.keys(defaultCloseButtonStyle).forEach((el) => {
+      for (const el of Object.keys(defaultCloseButtonStyle)) {
         this.closeButton.style[el] = defaultCloseButtonStyle[el];
-      });
+      }
     }
 
     // Adding content to the close button
