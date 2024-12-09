@@ -58,7 +58,7 @@
     "@capacitor/core": "^5.7.1",
     "@capacitor/filesystem": "^5.2.1",
     "@google/model-viewer": "^3.5.0",
-    "@maptiler/sdk": "^2.5.0",
+    "@maptiler/sdk": "^3.0.0-rc.2",
     "events": "^3.3.0",
     "three": "^0.163.0"
   }
