@@ -26,12 +26,13 @@
     "format:fix": "prettier --write \"src/**/*.{js,ts,tsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,ts}\"",
     "make": "npm run format:fix && npm run lint:fix && npm run build",
-    "dev": "vite -c vite.config-es.ts",
+    "dev": "concurrently \"npm run dev-umd\" \"npm run dev-server\"",
+    "dev-umd": "tsc && NODE_ENV=development vite build -w -c vite.config-umd.ts",
+    "dev-server": "browser-sync start --server --files \"demos\" \"build\" --watch --https --startPath \"demos/index.html?key=\"",
     "build": "npm run build-es; npm run build-umd",
     "build-dev": "NODE_ENV=development npm run build-es; NODE_ENV=development npm run build-umd",
     "build-umd": "tsc && vite build -c vite.config-umd.ts",
-    "build-es": "tsc && vite build -c vite.config-es.ts",
-    "build-umd-dev-watch": "tsc && NODE_ENV=development vite build -w -c vite.config-umd.ts"
+    "build-es": "tsc && vite build -c vite.config-es.ts"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,8 @@
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "@typescript-eslint/typescript-estree": "^7.0.2",
+    "browser-sync": "^3.0.3",
+    "concurrently": "^9.1.0",
     "eslint": "^8.44.0",
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.28.0",
