@@ -41,7 +41,6 @@ MapSDK.prototype.telemetry = {
 };
 /* *** */
 
-
 type CameraSettings = {
   center: LngLat;
   zoom: number;
