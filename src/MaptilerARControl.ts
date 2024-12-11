@@ -19,7 +19,7 @@ import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { addWatermarkToContext, blobToBase64 } from "./tools";
-import { registerTelemetry } from "telemetry/registerTelemetry.js";
+import { registerTelemetry } from "./telemetry";
 
 type CameraSettings = {
   center: LngLat;
