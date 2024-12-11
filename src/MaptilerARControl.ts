@@ -18,8 +18,29 @@ import EventEmitter from "events";
 import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
+
 import { addWatermarkToContext, blobToBase64 } from "./tools";
-import { registerTelemetry } from "./telemetry";
+
+import packagejson from "../package.json";
+
+/**
+ * TODO: Remove when telemetry will be implemented
+ */
+declare module "@maptiler/sdk" {
+  interface Map {
+    telemetry: {
+      registerModule: (name: string, version: string) => void;
+    };
+  }
+}
+
+MapSDK.prototype.telemetry = {
+  registerModule: (name: string, version: string) => {
+    console.log(`Telemetry module registered: ${name} ${version}`);
+  },
+};
+/* *** */
+
 
 type CameraSettings = {
   center: LngLat;
@@ -375,7 +396,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   onAdd(map: maplibregl.Map): HTMLElement {
-    this.setMap(map as MapSDK);
+    map.telemetry.registerModule(packagejson.name, packagejson.version);
+
+    this.setMap(map as Map);
 
     // Creation of the button to show on map
     this.controlButtonContainer = window.document.createElement("div");
