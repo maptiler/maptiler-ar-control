@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-ignore
 
 import {
   type Map as MapSDK,
@@ -22,24 +22,6 @@ import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { addWatermarkToContext, blobToBase64 } from "./tools";
 
 import packagejson from "../package.json";
-
-/**
- * TODO: Remove when telemetry will be implemented
- */
-declare module "@maptiler/sdk" {
-  interface Map {
-    telemetry: {
-      registerModule: (name: string, version: string) => void;
-    };
-  }
-}
-
-MapSDK.prototype.telemetry = {
-  registerModule: (name: string, version: string) => {
-    console.log(`Telemetry module registered: ${name} ${version}`);
-  },
-};
-/* *** */
 
 type CameraSettings = {
   center: LngLat;
@@ -394,10 +376,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     super.off(evtname);
   }
 
-  onAdd(map: maplibregl.Map): HTMLElement {
+  onAdd(map: MapSDK): HTMLElement {
     map.telemetry.registerModule(packagejson.name, packagejson.version);
 
-    this.setMap(map as Map);
+    this.setMap(map);
 
     // Creation of the button to show on map
     this.controlButtonContainer = window.document.createElement("div");
