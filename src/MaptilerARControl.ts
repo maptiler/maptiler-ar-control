@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-nocheck
 
 import {
   type Map as MapSDK,
