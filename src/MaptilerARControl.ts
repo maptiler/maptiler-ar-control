@@ -21,7 +21,7 @@ import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 
 import { addWatermarkToContext, blobToBase64 } from "./tools";
 
-import packagejson from "../package.json";
+import { name, version } from "../package.json";
 
 type CameraSettings = {
   center: LngLat;
@@ -377,7 +377,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   }
 
   onAdd(map: MapSDK): HTMLElement {
-    map.telemetry.registerModule(packagejson.name, packagejson.version);
+    map.telemetry.registerModule(name, version);
 
     this.setMap(map);
 
