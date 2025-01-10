@@ -1,5 +1,12 @@
 # MapTiler AR Control Changelog
 
+## v3.0.2
+- Fix declarations files generation
+
+## v3.0.0
+### Others
+- Using MapTiler SDK JS v3
+
 ## 2.1.3
 ### Others
 - Updating with SDK v2.4.0
