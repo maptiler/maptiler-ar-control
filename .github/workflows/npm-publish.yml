@@ -53,8 +53,8 @@ jobs:
 
       - name: List files in target-repo
         run: |
-          ls -la cdn
-          # cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
+          cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
+          ls -la cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
           # cd cdn
           # git checkout -b "${CDN_REPO_BRANCH}" || git checkout "${CDN_REPO_BRANCH}"
           # git add .
