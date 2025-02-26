@@ -7,14 +7,15 @@ on:
   release:
     types: [created]
 
+env:
+  CDN_MODULE_NAME: "maptiler-ar-control"
+  CDN_VERSION: "v.test"
+  CDN_REPO: "maptiler/cdn.maptiler.com"
+  CDN_REPO_BRANCH: "maptiler-ar-control-test"
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    env:
-      CDN_MODULE_NAME: "maptiler-ar-control"
-      CDN_VERSION: "v.test"
-      CDN_REPO: "maptiler/cdn.maptiler.com"
-      CDN_REPO_BRANCH: "maptiler-ar-control-test"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
