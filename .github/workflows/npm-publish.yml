@@ -45,6 +45,13 @@ jobs:
       #   env:
       #     NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
+      - name: Check if target directory exists and abort if it does
+        run: |
+          if [ -d "cdn/${CDN_MODULE_NAME}/${CDN_VERSION}" ]; then
+            echo "Directory cdn/${CDN_MODULE_NAME}/${CDN_VERSION} already exists. Aborting."
+            exit 1
+          fi
+
       - name: Checkout CDN repo
         uses: actions/checkout@v4
         with:
@@ -55,9 +62,8 @@ jobs:
         run: |
           mkdir -p cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
           cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
-          ls -la cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
-          # cd cdn
-          # git checkout -b "${CDN_REPO_BRANCH}" || git checkout "${CDN_REPO_BRANCH}"
-          # git add .
-          # git commit -m "Add ${CDN_MODULE_NAME} ${CDN_VERSION}"
-          # git push origin "${CDN_REPO_BRANCH}"
+          cd cdn
+          git checkout -b "${CDN_REPO_BRANCH}" || git checkout "${CDN_REPO_BRANCH}"
+          git add .
+          git commit -m "Add ${CDN_MODULE_NAME} ${CDN_VERSION}"
+          git push origin "${CDN_REPO_BRANCH}"
