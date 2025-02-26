@@ -48,7 +48,7 @@ jobs:
       - name: Checkout CDN repo
         uses: actions/checkout@v4
         with:
-          repository: ${{ CDN_REPO }}
+          repository: "$CDN_REPO"
           path: cdn
 
       - name: List files in target-repo
