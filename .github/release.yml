@@ -1,11 +1,19 @@
 changelog:
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - dependabot[bot]
   categories:
-    - title: 🏕 Features
+    - title: 🚀 Features
       labels:
-        - '*'
-      exclude:
-        labels:
-          - dependencies
-    - title: 👒 Dependencies
+        - feature
+    - title: 🐛 Bug Fixes
       labels:
-        - dependencies
+        - bug
+    - title: 🚀 Breaking Changes
+      labels:
+        - breaking-change
+    - title: Other Changes
+      labels:
+        - "*" # Catch-all for pull requests that didn't match any of the previous categories
