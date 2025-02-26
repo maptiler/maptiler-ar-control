@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ env.CDN_REPO }}
-          token: "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"
+          token: "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"
           path: cdn
 
       - name: List files in target-repo
