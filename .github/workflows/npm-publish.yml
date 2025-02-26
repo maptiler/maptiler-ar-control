@@ -10,6 +10,11 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    env:
+      CDN_MODULE_NAME: "maptiler-ar-control"
+      CDN_VERSION: "v.test"
+      CDN_REPO: "maptiler/cdn.maptiler.com"
+      CDN_REPO_BRANCH: "maptiler-ar-control-test"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -42,9 +47,14 @@ jobs:
       - name: Checkout CDN repo
         uses: actions/checkout@v4
         with:
-          repository: maptiler/cdn.maptiler.com
-          path: target-repo
+          repository: CDN_REPO
+          path: cdn
 
       - name: List files in target-repo
         run: |
-          ls -la target-repo
+          cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
+          cd cdn
+          git checkout -b "${CDN_REPO_BRANCH}" || git checkout "${CDN_REPO_BRANCH}"
+          git add .
+          git commit -m "Add ${CDN_MODULE_NAME} ${CDN_VERSION}"
+          git push origin "${CDN_REPO_BRANCH}"
