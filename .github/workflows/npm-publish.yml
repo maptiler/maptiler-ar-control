@@ -31,7 +31,12 @@ jobs:
 
       - run: npm run make
 
-      - name: Get package version
+      - name: Extract repository name
+        run: |
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          echo "Repository name is $REPO_NAME"
+
+      - name: Extract package version
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
@@ -65,8 +70,7 @@ jobs:
 
       - name: List files in target-repo
         run: |
-          # REPO_NAME=${GITHUB_REPOSITORY##*/}
-          echo "Repository name: $GITHUB_REPOSITORY"
+          echo "Repository name: $REPO_NAME"
           echo "Package version is $PACKAGE_VERSION"
           # mkdir -p cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
           # cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
