@@ -30,6 +30,9 @@ jobs:
       - run: npm ci
 
       - run: npm run make
+
+      - name: Get package version
+        run: echo "PACKAGE_VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
       
       # - name: Publish NPM package (regular)
       #   if: "!github.event.release.prerelease"
@@ -60,7 +63,7 @@ jobs:
 
       - name: List files in target-repo
         run: |
-          node -p "require('./package.json').version"
+          run: echo "Package version is $PACKAGE_VERSION"
           # mkdir -p cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
           # cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
           # cd cdn
