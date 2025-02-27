@@ -68,7 +68,7 @@ jobs:
           repository: ${{ env.CDN_REPO }}
           path: cdn
 
-      - name: List files in target-repo
+      - name: Push to CDN
         run: |
           echo "Repository name: $REPO_NAME"
           echo "Package version is $PACKAGE_VERSION"
@@ -81,3 +81,4 @@ jobs:
           # git add .
           # git commit -m "Add ${CDN_MODULE_NAME} ${CDN_VERSION}"
           # git push origin "${CDN_REPO_BRANCH}"
+          # ... pull-request here ...
