@@ -60,13 +60,13 @@ jobs:
 
       - name: List files in target-repo
         run: |
-          echo $npm_package_version
-          mkdir -p cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
-          cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
-          cd cdn
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git checkout -b "${CDN_REPO_BRANCH}" || git checkout "${CDN_REPO_BRANCH}"
-          git add .
-          git commit -m "Add ${CDN_MODULE_NAME} ${CDN_VERSION}"
-          git push origin "${CDN_REPO_BRANCH}"
+          node -p "require('./package.json').version"
+          # mkdir -p cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
+          # cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
+          # cd cdn
+          # git config user.name "github-actions"
+          # git config user.email "github-actions@github.com"
+          # git checkout -b "${CDN_REPO_BRANCH}" || git checkout "${CDN_REPO_BRANCH}"
+          # git add .
+          # git commit -m "Add ${CDN_MODULE_NAME} ${CDN_VERSION}"
+          # git push origin "${CDN_REPO_BRANCH}"
