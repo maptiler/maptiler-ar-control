@@ -63,9 +63,7 @@ jobs:
 
       - name: List files in target-repo
         run: |
-          # REPO_NAME=${GITHUB_REPOSITORY##*/}
-          echo "Repository name: $GITHUB_REPOSITORY"
-          echo "Package version is $PACKAGE_VERSION"
+          node -p "require('./package.json').version"
           # mkdir -p cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
           # cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
           # cd cdn
