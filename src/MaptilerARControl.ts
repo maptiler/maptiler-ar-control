@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import {
   type Map as MapSDK,
   type LngLatBounds,
@@ -8,7 +6,7 @@ import {
   math,
 } from "@maptiler/sdk";
 import { ModelViewerElement } from "@google/model-viewer";
-import * as platformConstants from "./platform-constants.ts";
+import * as platformConstants from "./platform-constants";
 
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
@@ -22,6 +20,7 @@ import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { addWatermarkToContext, blobToBase64 } from "./tools";
 
 import { name, version } from "../package.json";
+import { CameraChangeDetails } from "@google/model-viewer/lib/features/controls";
 
 type CameraSettings = {
   center: LngLat;
@@ -43,6 +42,10 @@ type TileIndex2D = {
 };
 
 function removeDomNode(node: HTMLElement) {
+  if (node.parentNode === null) {
+    throw new Error("The node has no parent node.");
+  }
+
   node.parentNode.removeChild(node);
 }
 
@@ -347,11 +350,11 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private gltfExporter: GLTFExporter = new GLTFExporter();
   private lock = false;
   private options: MaptilerARControlOptions;
-  private arButton: HTMLElement = null;
-  private closeButton: HTMLElement = null;
-  private modelViewer: ModelViewerElement = null;
-  private logoImgElement: HTMLImageElement = null;
-  private logo: string;
+  private arButton: HTMLElement | null = null;
+  private closeButton: HTMLElement | null = null;
+  private modelViewer: ModelViewerElement | null = null;
+  private logoImgElement: HTMLImageElement | null = null;
+  private logo?: string;
 
   constructor(options: MaptilerARControlOptions = {}) {
     super();
@@ -361,19 +364,21 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       ...options,
     };
 
-    this.logo = options.logo;
+    if (options.logo !== undefined) {
+      this.logo = options.logo;
+    }
   }
 
   on(evtname: string, cb: () => void) {
-    super.on(evtname, cb);
+    return super.on(evtname, cb);
   }
 
   once(evtname: string, cb: () => void) {
-    super.once(evtname, cb);
+    return super.once(evtname, cb);
   }
 
-  off(evtname: string) {
-    super.off(evtname);
+  off(evtname: string, cb: () => void) {
+    return super.off(evtname, cb);
   }
 
   onAdd(map: MapSDK): HTMLElement {
@@ -506,7 +511,13 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.hasTerrain = this.map.hasTerrain();
     this.originalPixelRatio = this.map.getPixelRatio();
     if (this.hasTerrain) {
-      this.terrainSourceID = this.map.getTerrain().source;
+      const terrain = this.map.getTerrain();
+
+      if (terrain === null) {
+        throw new Error("The terrain source is null");
+      }
+
+      this.terrainSourceID = terrain.source;
     }
   }
 
@@ -596,6 +607,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.map.addSource("xr_module_global_blackout_source", {
       type: "geojson",
       data: {
+        properties: {},
         type: "Feature",
         geometry: {
           type: "Polygon",
@@ -1176,7 +1188,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     this.modelViewer.style.height = "100%";
     this.modelViewer.style.zIndex = "3";
     this.modelViewer.style.position = "absolute";
-    this.modelViewer.style.background = this.options.background;
+
+    if (this.options.background) {
+      this.modelViewer.style.background = this.options.background;
+    }
 
     container.appendChild(this.modelViewer);
 
@@ -1189,12 +1204,15 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.arButton.classList.add(this.options.arButtonClassName);
     } else {
       for (const el of Object.keys(defaultArButtonStyle)) {
+        // @ts-ignore
         this.arButton.style[el] = defaultArButtonStyle[el];
       }
     }
 
     // Adding content to the AR button
-    if (typeof this.options.arButtonContent === "string") {
+    if (this.options.arButtonContent === undefined) {
+      console.warn("No AR button content provided.");
+    } else if (typeof this.options.arButtonContent === "string") {
       this.arButton.innerHTML = this.options.arButtonContent;
     } else {
       this.arButton.appendChild(this.options.arButtonContent);
@@ -1210,12 +1228,15 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.closeButton.classList.add(this.options.closeButtonClassName);
     } else {
       for (const el of Object.keys(defaultCloseButtonStyle)) {
+        // @ts-ignore
         this.closeButton.style[el] = defaultCloseButtonStyle[el];
       }
     }
 
     // Adding content to the close button
-    if (typeof this.options.closeButtonContent === "string") {
+    if (this.options.closeButtonContent === undefined) {
+      console.warn("No close button content provided.");
+    } else if (typeof this.options.closeButtonContent === "string") {
       this.closeButton.innerHTML = this.options.closeButtonContent;
     } else {
       this.closeButton.appendChild(this.options.closeButtonContent);
@@ -1258,10 +1279,11 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     // Automatically run the AR
     let successfullyEnabledAR = false;
+
     if (this.options.activateAR) {
       // Wait for Model Viewer to be ready
       this.modelViewer.addEventListener("load", async () => {
-        if (this.modelViewer.canActivateAR) {
+        if (this.modelViewer !== null && this.modelViewer.canActivateAR) {
           try {
             await this.modelViewer.activateAR();
             successfullyEnabledAR = true;
@@ -1280,6 +1302,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.emit("computeEnd");
     }
 
+    // @ts-ignore
     this.modelViewer.addEventListener(
       "camera-change",
       (e: CustomEvent<CameraChangeDetails>) => {
@@ -1295,9 +1318,18 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
   close() {
     this.dispose();
-    removeDomNode(this.arButton);
-    removeDomNode(this.modelViewer);
-    removeDomNode(this.closeButton);
+
+    if (this.arButton !== null) {
+      removeDomNode(this.arButton);
+    }
+
+    if (this.modelViewer !== null) {
+      removeDomNode(this.modelViewer);
+    }
+
+    if (this.closeButton !== null) {
+      removeDomNode(this.closeButton);
+    }
 
     if (this.logoImgElement) {
       removeDomNode(this.logoImgElement);
@@ -1317,7 +1349,9 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private createAttributionElement(): HTMLDivElement | null {
     // We are looking for an attribution control, and use its html content
     const attribHTML = this.map._controls
+      // @ts-ignore
       .filter((c) => c._attribHTML)
+      // @ts-ignore
       .map((c) => c._attribHTML);
     if (!attribHTML.length) return null;
 
@@ -1328,8 +1362,8 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       "12px / 20px Helvetica Neue, Arial, Helvetica, sans-serif"
     );
     attribDiv.style.setProperty("position", "absolute");
-    attribDiv.style.setProperty("bottom", 0);
-    attribDiv.style.setProperty("right", 0);
+    attribDiv.style.setProperty("bottom", "0");
+    attribDiv.style.setProperty("right", "0");
     attribDiv.style.setProperty("width", "fit-content");
     attribDiv.style.setProperty("height", "fit-content");
     attribDiv.style.setProperty("padding", "1px 4px");
