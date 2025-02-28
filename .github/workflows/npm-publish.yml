@@ -8,8 +8,6 @@ on:
     types: [created]
 
 env:
-  CDN_MODULE_NAME: "maptiler-ar-control"
-  CDN_VERSION: "v.test"
   CDN_REPO: "maptiler/cdn.maptiler.com"
   CDN_REPO_BRANCH: "maptiler-ar-control-test"
 
@@ -57,8 +55,8 @@ jobs:
 
       - name: Check if target directory exists and abort if it does
         run: |
-          if [ -d "cdn/${CDN_MODULE_NAME}/${CDN_VERSION}" ]; then
-            echo "Directory cdn/${CDN_MODULE_NAME}/${CDN_VERSION} already exists. Aborting."
+          if [ -d "cdn/${REPO_NAME}/${PACKAGE_VERSION}" ]; then
+            echo "Directory cdn/${REPO_NAME}/${PACKAGE_VERSION} already exists. Aborting."
             exit 1
           fi
 
@@ -67,18 +65,28 @@ jobs:
         with:
           repository: ${{ env.CDN_REPO }}
           path: cdn
+          # key here
 
       - name: Push to CDN
         run: |
           echo "Repository name: $REPO_NAME"
           echo "Package version is $PACKAGE_VERSION"
-          # mkdir -p cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
-          # cp -r build/* cdn/${CDN_MODULE_NAME}/${CDN_VERSION}
+
+          # mkdir -p cdn/${REPO_NAME}/${PACKAGE_VERSION}
+          # cp -r build/* cdn/${REPO_NAME}/${PACKAGE_VERSION}
           # cd cdn
           # git config user.name "github-actions"
           # git config user.email "github-actions@github.com"
           # git checkout -b "${CDN_REPO_BRANCH}" || git checkout "${CDN_REPO_BRANCH}"
           # git add .
-          # git commit -m "Add ${CDN_MODULE_NAME} ${CDN_VERSION}"
+          # git commit -m "Add ${REPO_NAME} ${PACKAGE_VERSION}"
           # git push origin "${CDN_REPO_BRANCH}"
           # ... pull-request here ...
+          # verify if this stuff bellow works
+          # echo "${{ secrets.ACCESS_TOKEN }}" > token.txt
+          # gh auth login --with-token < token.txt
+          # gh pr create \
+          #   --body "" \
+          #   --title "chore: update scripts to $LATEST_TAG" \
+          #   --head "$BRANCH_NAME" \
+          #   --base "main"
