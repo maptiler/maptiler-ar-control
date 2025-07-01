@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MapTiler AR Control</title>
@@ -7,7 +8,7 @@
     <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.0/maptiler-sdk.css" rel="stylesheet" />
 
     <!-- Importing MapTiler AR Control -->
-    <script src="../build/maptiler-ar-control.umd.js"></script>
+    <script src="./js/maptiler-ar-control.umd.js"></script>
 
     <!-- Importing QR code library -->
     <script src="qrcode.js"></script>
@@ -105,9 +106,10 @@
       }
 
       function getKey() {
-        const key = (new URLSearchParams(location.search)).get("key");
+        const key = (new URLSearchParams(location.search)).get("key") ?? localStorage.getItem("maptiler-api-key");
         if (!key) {
-          alert("The MapTiler Cloud key is missing. Add yours in the URL with \n?key=YOUR_KEY\nOr get one for free at https://www.maptiler.com/");
+          const inputKey = prompt("The MapTiler Cloud key is missing. Add yours in the URL with \n?key=YOUR_KEY\nOr get one for free at https://www.maptiler.com/");
+          localStorage.setItem("maptiler-api-key", inputKey);
           return "_MISSING_MAPTILER_API_KEY_";
         }
         return key;
