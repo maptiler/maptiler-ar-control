@@ -442,6 +442,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     try {
       this.close();
     } catch (e) {
+      console.warn("Error closing AR on init", e);
       // empty block
     }
 
@@ -1282,7 +1283,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
             // Waiting a sec before fireing event because Quicklook takes some time to start
             setTimeout(() => this.emit("computeEnd"), 1000);
           } catch (e) {
-            console.warn("AR to be automatically activated but failed.");
+            console.warn("AR to be automatically activated but failed.", e);
             this.emit("computeEnd");
           }
         } else {
