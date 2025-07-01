@@ -1,5 +1,9 @@
 # MapTiler AR Control Changelog
 
+## v3.0.3
+- Fix rendering of double close button when in XR Mode
+- Update dev command
+
 ## v3.0.2
 - Fix declarations files generation
 
