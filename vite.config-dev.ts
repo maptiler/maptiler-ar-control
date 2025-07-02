@@ -1,13 +1,11 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
-const isProduction = process.env.NODE_ENV === "production";
-
 export default defineConfig({
-  mode: isProduction ? "production" : "development",
+  mode: "development",
   build: {
-    outDir: "build",
-    minify: isProduction,
+    outDir: "./demos/js",
+    minify: false,
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'src/maptiler-ar-control.ts'),
@@ -15,7 +13,6 @@ export default defineConfig({
       fileName: (format, entryName) => [
         entryName,
         format,
-        isProduction && 'min',
         'js',
       ]
         .filter(Boolean)
@@ -33,6 +30,11 @@ export default defineConfig({
           "@maptiler/sdk": "maptilersdk",
         },
       },
+    },
+  },
+  server: {
+    watch: {
+      usePolling: true,
     },
   },
   plugins: [],
