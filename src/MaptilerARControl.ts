@@ -1203,7 +1203,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     this.modelViewer.appendChild(this.arButton);
 
-
     this.closeButton = document.createElement("button");
     this.closeButton.id = "maptiler-ar-close-button";
 
@@ -1218,7 +1217,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     this.exitXRButton = document.createElement("button");
     this.exitXRButton.setAttribute("slot", "exit-webxr-ar-button");
-    
+
     if (this.exitXRButton) {
       for (const el of Object.keys(defaultCloseButtonStyle)) {
         this.exitXRButton.style[el] = defaultCloseButtonStyle[el];
@@ -1233,7 +1232,6 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       this.closeButton.appendChild(this.options.closeButtonContent);
       this.exitXRButton.appendChild(this.options.closeButtonContent);
     }
-
 
     this.modelViewer.appendChild(this.exitXRButton);
     this.modelViewer.appendChild(this.closeButton);
