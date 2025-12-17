@@ -46,7 +46,8 @@ function removeDomNode(node: HTMLElement) {
   node.parentNode.removeChild(node);
 }
 
-const MIN_TERRAIN_ZOOM = 12;
+const MIN_TERRAIN_ZOOM = 0;
+const MAX_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
 const MAX_ZOOM = 16;
 
@@ -71,9 +72,15 @@ async function createMosaic(
   tileIndexTopLeft: TileIndex2D,
   tileIndexBottomRight: TileIndex2D,
   zoom: number,
+  wrapsOverAntimeridian: boolean,
   tilesetURLs: Array<string>
 ): Promise<HTMLCanvasElement> {
-  const nbTileX = tileIndexBottomRight.x - tileIndexTopLeft.x + 1;
+  const numberOfTiles = 2 ** zoom;
+  const nbTileX =
+    tileIndexBottomRight.x -
+    tileIndexTopLeft.x +
+    1 +
+    (wrapsOverAntimeridian ? numberOfTiles : 0);
   const nbTileY = tileIndexBottomRight.y - tileIndexTopLeft.y + 1;
   const canvas = document.createElement("canvas");
   canvas.width = nbTileX * TERRAIN_TILE_SIZE;
@@ -87,21 +94,28 @@ async function createMosaic(
 
   const promises = [];
 
-  for (let j = tileIndexTopLeft.y; j <= tileIndexBottomRight.y; j += 1) {
-    for (let i = tileIndexTopLeft.x; i <= tileIndexBottomRight.x; i += 1) {
-      const imageUrlPattern =
-        tilesetURLs[~~(Math.random() * tilesetURLs.length)];
-      const imageUrl = imageUrlPattern
-        .replace("{x}", i.toString())
-        .replace("{y}", j.toString())
-        .replace("{z}", zoom.toString());
-      promises.push(
-        injectToContext(imageUrl, context, [
-          shiftX * TERRAIN_TILE_SIZE,
-          shiftY * TERRAIN_TILE_SIZE,
-        ])
-      );
-      shiftX++;
+  const prepareTile = (x: number, y: number) => {
+    const imageUrlPattern = tilesetURLs[~~(Math.random() * tilesetURLs.length)];
+    const imageUrl = imageUrlPattern
+      .replace("{x}", x.toString())
+      .replace("{y}", y.toString())
+      .replace("{z}", zoom.toString());
+    promises.push(
+      injectToContext(imageUrl, context, [
+        shiftX * TERRAIN_TILE_SIZE,
+        shiftY * TERRAIN_TILE_SIZE,
+      ])
+    );
+    shiftX++;
+  };
+
+  for (let y = tileIndexTopLeft.y; y <= tileIndexBottomRight.y; y += 1) {
+    if (wrapsOverAntimeridian) {
+      for (let x = tileIndexTopLeft.x; x < 2 ** zoom; x += 1) prepareTile(x, y);
+      for (let x = 0; x <= tileIndexBottomRight.x; x += 1) prepareTile(x, y);
+    } else {
+      for (let x = tileIndexTopLeft.x; x <= tileIndexBottomRight.x; x += 1)
+        prepareTile(x, y);
     }
     shiftX = 0;
     shiftY++;
@@ -696,8 +710,12 @@ export class MaptilerARControl extends EventEmitter implements IControl {
   private async computeTerrainData() {
     this.emit("startComputeTerrainData", {});
 
-    // For fetching tiles, the zoom level we use must be integer and not above the max zoom level for terrain data
-    const zoom = Math.min(Math.floor(this.map.getZoom()), MIN_TERRAIN_ZOOM);
+    // For fetching tiles, the zoom level we use must be non-negative integer and not above the max zoom level for terrain data
+    const zoom = Math.max(
+      Math.min(Math.floor(this.map.getZoom()), MAX_TERRAIN_ZOOM),
+      MIN_TERRAIN_ZOOM
+    );
+    const numberOfTiles = 2 ** zoom;
     const bounds = this.map.getBounds();
     const north = bounds.getNorth();
     const south = bounds.getSouth();
@@ -710,7 +728,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       false
     );
     const tileIndexTopLeft = {
-      x: tileIndexTopLeftArr[0],
+      x: west === -180 ? 0 : tileIndexTopLeftArr[0],
       y: tileIndexTopLeftArr[1],
     } as TileIndex2D;
 
@@ -728,18 +746,21 @@ export class MaptilerARControl extends EventEmitter implements IControl {
       x: tileIndexBottomRightArr[0],
       y: tileIndexBottomRightArr[1],
     } as TileIndex2D;
-    const tileIndexBottomRightFloored = {
-      x: Math.floor(tileIndexBottomRight.x),
-      y: Math.floor(tileIndexBottomRight.y),
+    const tileIndexBottomRightCeiled = {
+      x: Math.ceil(tileIndexBottomRight.x) - 1,
+      y: Math.ceil(tileIndexBottomRight.y) - 1,
     };
+
+    const wrapsOverAntimeridian = tileIndexBottomRight.x < tileIndexTopLeft.x;
 
     // The terrainCanvas is rounded up to be aligned with the tile
     const sdkConfig = this.map.getSdkConfig();
     const mtsid = this.map.getMaptilerSessionId();
     const terrainCanvas = await createMosaic(
       tileIndexTopLeftFloored,
-      tileIndexBottomRightFloored,
+      tileIndexBottomRightCeiled,
       zoom,
+      wrapsOverAntimeridian,
       [
         `https://api.maptiler.com/tiles/terrain-rgb-v2/{z}/{x}/{y}.webp?key=${sdkConfig.apiKey}&mtsid=${mtsid}&module=xr`,
       ]
@@ -757,7 +778,10 @@ export class MaptilerARControl extends EventEmitter implements IControl {
 
     const size = [
       Math.ceil(
-        TERRAIN_TILE_SIZE * (tileIndexBottomRight.x - tileIndexTopLeft.x)
+        TERRAIN_TILE_SIZE *
+          (tileIndexBottomRight.x -
+            tileIndexTopLeft.x +
+            (wrapsOverAntimeridian ? numberOfTiles : 0))
       ),
       Math.ceil(
         TERRAIN_TILE_SIZE * (tileIndexBottomRight.y - tileIndexTopLeft.y)
