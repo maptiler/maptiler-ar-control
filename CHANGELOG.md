@@ -1,6 +1,6 @@
 # MapTiler AR Control Changelog
 
-## NEXT
+## v3.0.4
 - Fix terrain tiles calculations - AR Control now works with any latitude/longitude combination and with Globe projection negative zoom
 
 ## v3.0.3
