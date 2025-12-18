@@ -50,6 +50,7 @@ const MIN_TERRAIN_ZOOM = 0;
 const MAX_TERRAIN_ZOOM = 12;
 const TERRAIN_TILE_SIZE = 512;
 const MAX_ZOOM = 16;
+const MAX_VALID_LATITUDE = 85.0511287;
 
 export function mapTextureDataToCanvas(mtd: MapTextureData): HTMLCanvasElement {
   // Create a blank canvas
@@ -717,8 +718,14 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     );
     const numberOfTiles = 2 ** zoom;
     const bounds = this.map.getBounds();
-    const north = bounds.getNorth();
-    const south = bounds.getSouth();
+    const north = Math.max(
+      Math.min(bounds.getNorth(), MAX_VALID_LATITUDE),
+      -MAX_VALID_LATITUDE
+    );
+    const south = Math.max(
+      Math.min(bounds.getSouth(), MAX_VALID_LATITUDE),
+      -MAX_VALID_LATITUDE
+    );
     const east = bounds.getEast();
     const west = bounds.getWest();
 
