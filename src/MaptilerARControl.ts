@@ -112,7 +112,8 @@ async function createMosaic(
 
   for (let y = tileIndexTopLeft.y; y <= tileIndexBottomRight.y; y += 1) {
     if (wrapsOverAntimeridian) {
-      for (let x = tileIndexTopLeft.x; x < 2 ** zoom; x += 1) prepareTile(x, y);
+      for (let x = tileIndexTopLeft.x; x < numberOfTiles; x += 1)
+        prepareTile(x, y);
       for (let x = 0; x <= tileIndexBottomRight.x; x += 1) prepareTile(x, y);
     } else {
       for (let x = tileIndexTopLeft.x; x <= tileIndexBottomRight.x; x += 1)
