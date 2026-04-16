@@ -1,5 +1,10 @@
 # MapTiler AR Control Changelog
 
+## NEXT
+- Updates @google/model-viewer dep to 4.2.0
+- Update three.js dep to 0.182.0
+- Breaking Change MapTilerSDK is now a peer dep at ^4.0.0
+
 ## v3.0.4
 - Fix terrain tiles calculations - AR Control now works with any latitude/longitude combination and with Globe projection negative zoom
 
