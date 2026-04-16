@@ -65,6 +65,6 @@
     "three": "^0.182.0"
   },
   "peerDependencies": {
-    "@maptiler/sdk": "^4.0.0"
+    "@maptiler/sdk": "3 || 4"
   }
 }
