@@ -42,7 +42,9 @@ type TileIndex2D = {
   y: number;
 };
 
-function removeDomNode(node: HTMLElement) {
+function removeDomNode(node?: HTMLElement) {
+  if (!node || !node.parentNode) return;
+
   node.parentNode.removeChild(node);
 }
 
@@ -1199,7 +1201,7 @@ export class MaptilerARControl extends EventEmitter implements IControl {
     const modelObjectURLGLB = URL.createObjectURL(modelBlobGLB);
 
     this.modelViewer = new ModelViewerElement();
-    this.modelViewer.src = modelObjectURLGLB;
+    this.modelViewer.setAttribute("src", modelObjectURLGLB);
     this.modelViewer.setAttribute("ar", "true");
     this.modelViewer.setAttribute("tone-mapping", "commerce");
     this.modelViewer.setAttribute("ar-modes", "webxr quick-look");
